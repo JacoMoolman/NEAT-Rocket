@@ -22,7 +22,7 @@ rocket_rect = rocket_img.get_rect()
 rocket_rect.center = (WIDTH // 2, HEIGHT // 4)  # Position the rocket at the top quarter of the screen
 
 # Load and resize the flames image
-flames_img = pygame.image.load("Flames.png") 
+flames_img = pygame.image.load("Flames.png")
 flames_img = pygame.transform.scale(flames_img, (rocket_img.get_width(), rocket_img.get_height()))
 flames_rect = flames_img.get_rect()
 
@@ -89,11 +89,6 @@ landed = False
 pygame.font.init()
 font = pygame.font.Font(None, 36)
 
-# Initialize score and time variables
-score = 0
-best_time = float('inf')  # Initialize with infinity
-current_time = 0
-
 # Game loop
 running = True
 clock = pygame.time.Clock()
@@ -151,9 +146,6 @@ while running:
         if rotated_rect.colliderect(platform_rect):
             if abs(angle) < MAX_LANDING_ANGLE and velocity.length() < MAX_LANDING_SPEED:
                 landed = True
-                score += 1  # Increment score on successful landing
-                if current_time < best_time:
-                    best_time = current_time  # Update best time if current time is better
                 platform_rect = reset_game()  # Reset for next round
             else:
                 landed = False
@@ -185,26 +177,14 @@ while running:
     speed_surface = font.render(velocity_text, True, (255, 255, 255))
     screen.blit(speed_surface, (10, 10))
 
-    # Display score
-    score_text = f"Score: {score}"
-    score_surface = font.render(score_text, True, (255, 255, 255))
-    score_rect = score_surface.get_rect(topright=(WIDTH - 10, 10))
-    screen.blit(score_surface, score_rect)
-
     # Display current time
     time_text = f"Time: {current_time / 1000:.2f}"
     time_surface = font.render(time_text, True, (255, 255, 255))
     screen.blit(time_surface, (10, 50))
 
-    # Display best time
-    best_time_text = f"Best: {best_time / 1000:.2f}" if best_time < float('inf') else "Best: --"
-    best_time_surface = font.render(best_time_text, True, (255, 255, 255))
-    best_time_rect = best_time_surface.get_rect(topright=(WIDTH - 10, 50))
-    screen.blit(best_time_surface, best_time_rect)
-
-    # Display game over message
+    # Update the game over message
     if game_over and not landed:
-        text = font.render(f"Crashed! Final Score: {score}", True, (255, 0, 0))
+        text = font.render("Crashed!", True, (255, 0, 0))
         text_rect = text.get_rect(center=(WIDTH // 2, HEIGHT // 2))
         screen.blit(text, text_rect)
 
