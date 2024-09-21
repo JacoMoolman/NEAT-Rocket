@@ -12,8 +12,8 @@ class MoonLanderGame:
         # Set up the display
         self.WIDTH = 800
         self.HEIGHT = 600
-        self.screen = pygame.display.set_mode((self.WIDTH, self.HEIGHT))
-        pygame.display.set_caption("Moon Lander")
+        self.screen = None
+        self.clock = None
 
         # Game settings
         self.MAX_LANDING_ANGLE = 40  # Maximum angle (in degrees) for safe landing
@@ -58,11 +58,14 @@ class MoonLanderGame:
         pygame.font.init()
         self.font = pygame.font.Font(None, 36)
 
-        # Initialize clock
-        self.clock = pygame.time.Clock()
-
         # Game state
         self.reset()
+
+    def initialize_display(self):
+        if self.screen is None:
+            self.screen = pygame.display.set_mode((self.WIDTH, self.HEIGHT))
+            pygame.display.set_caption("Moon Lander")
+            self.clock = pygame.time.Clock()
 
     def generate_platform_position(self):
         x = random.randint(self.BOX_LEFT, self.BOX_RIGHT - self.PLATFORM_WIDTH)
@@ -75,6 +78,7 @@ class MoonLanderGame:
         return pygame.math.Vector2(x, y)
 
     def reset(self):
+        self.initialize_display()
         self.position = self.generate_rocket_position()
         self.velocity = pygame.math.Vector2(0, 0)
         self.angle = 0
@@ -84,6 +88,7 @@ class MoonLanderGame:
         self.platform_rect = self.generate_platform_position()
         self.running = True
         self.score = 0
+        self.thrust = False  # Reset thrust when resetting the game
         return self.get_state()
 
     def get_state(self):
@@ -120,7 +125,8 @@ class MoonLanderGame:
                 self.angle -= self.ROTATION_SPEED
 
             # Apply thrust in the direction the rocket is facing
-            if action[2]:
+            self.thrust = action[2]  # Update the thrust attribute
+            if self.thrust:
                 thrust_vector = pygame.math.Vector2(0, -self.THRUST).rotate(-self.angle)
                 self.velocity += thrust_vector
 
@@ -167,6 +173,31 @@ class MoonLanderGame:
                 self.landed = False
                 self.game_over = True
 
+        self.draw()
+
+        # Tick the clock
+        self.clock.tick(600)
+
+        # Update time
+        self.current_time += self.clock.get_time()
+
+        # Calculate reward
+        reward = 0
+        if self.landed:
+            reward = 1000  # Reward for landing
+        elif self.game_over:
+            reward = -100  # Penalty for crashing
+        else:
+            # Reward for getting closer to the platform
+            distance = self.platform_rect.center - self.position
+            reward = -distance.length() / 1000  # Normalize
+
+        # Get new state
+        state = self.get_state()
+
+        return state, reward, self.game_over, {}
+
+    def draw(self):
         # Fill the screen with a dark color (space-like)
         self.screen.fill((20, 20, 40))
 
@@ -174,14 +205,16 @@ class MoonLanderGame:
         pygame.draw.rect(self.screen, (200, 200, 200), self.platform_rect)
 
         # Draw the flames if thrust is applied
-        if action[2]:
+        if self.thrust:
             rotated_flames = pygame.transform.rotate(self.flames_img, self.angle)
-            flames_offset = pygame.math.Vector2(0, rotated_rect.height * 0.75).rotate(-self.angle)  # Increased offset
-            flames_pos = rotated_rect.center + flames_offset
+            flames_offset = pygame.math.Vector2(0, self.rocket_rect.height * 0.75).rotate(-self.angle)
+            flames_pos = self.rocket_rect.center + flames_offset
             flames_rect = rotated_flames.get_rect(center=flames_pos)
             self.screen.blit(rotated_flames, flames_rect)
 
         # Draw the rotated rocket
+        rotated_rocket = pygame.transform.rotate(self.rocket_img, self.angle)
+        rotated_rect = rotated_rocket.get_rect(center=self.rocket_rect.center)
         self.screen.blit(rotated_rocket, rotated_rect)
 
         # Display speed
@@ -208,27 +241,8 @@ class MoonLanderGame:
         # Update the display
         pygame.display.flip()
 
-        # Tick the clock
-        self.clock.tick(600)
-
-        # Update time
-        self.current_time += self.clock.get_time()
-
-        # Calculate reward
-        reward = 0
-        if self.landed:
-            reward = 1000  # Reward for landing
-        elif self.game_over:
-            reward = -100  # Penalty for crashing
-        else:
-            # Reward for getting closer to the platform
-            distance = self.platform_rect.center - self.position
-            reward = -distance.length() / 1000  # Normalize
-
-        # Get new state
-        state = self.get_state()
-
-        return state, reward, self.game_over, {}
-
     def close(self):
-        pygame.quit()
+        if self.screen is not None:
+            pygame.quit()
+            self.screen = None
+            self.clock = None

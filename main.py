@@ -5,51 +5,42 @@ import os
 import pickle
 import multiprocessing
 from MoonLanderGame import MoonLanderGame
+import pygame
 
 # Set the number of generations
 NUM_GENERATIONS = 50
 
 def eval_genomes(genomes, config):
+    game = MoonLanderGame()
+    
     for genome_id, genome in genomes:
-        # Create a neural network for the genome
         net = neat.nn.FeedForwardNetwork.create(genome, config)
 
-        # Create a game instance
-        game = MoonLanderGame()
-
-        # Initialize fitness
         fitness = 0
-
-        # Reset the game to get the initial state
         state = game.reset()
         done = False
 
         while not done:
-            # Get action from the neural network
-            output = net.activate(state)
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    return
 
-            # Convert network output to actions
+            output = net.activate(state)
             rotate_left = output[0] > 0.5
             rotate_right = output[1] > 0.5
             thrust = output[2] > 0.5
-
             action = (rotate_left, rotate_right, thrust)
 
-            # Take a step in the game
             state, reward, done, _ = game.step(action)
-
-            # Update fitness
             fitness += reward
 
-            # Optionally, break if the game runs too long
-            if game.current_time > 20000:  # 20 seconds max per game
+            if game.current_time > 20000:
                 break
 
-        # Assign fitness to the genome
         genome.fitness = fitness
 
-        # Close the game
-        game.close()
+    game.close()
 
 def run_neat():
     # Load the config file
