@@ -89,6 +89,7 @@ class MoonLanderGame:
         self.running = True
         self.score = 0
         self.thrust = False  # Reset thrust when resetting the game
+        self.frame_count = 0
         return self.get_state()
 
     def get_state(self):
@@ -178,8 +179,11 @@ class MoonLanderGame:
         # Tick the clock
         self.clock.tick(600)
 
-        # Update time
-        self.current_time += self.clock.get_time()
+        # Update frame count
+        self.frame_count += 1
+
+        # Calculate game time based on frames
+        self.current_time = (self.frame_count / self.frames_per_second) * 1000 * self.time_factor
 
         # Calculate reward
         reward = 0
@@ -246,3 +250,7 @@ class MoonLanderGame:
             pygame.quit()
             self.screen = None
             self.clock = None
+
+    def set_clock_speed(self, speed):
+        self.frames_per_second = speed
+        self.time_factor = speed / 60  # Adjust time factor based on speed

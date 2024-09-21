@@ -12,6 +12,7 @@ NUM_GENERATIONS = 50
 
 def eval_genomes(genomes, config):
     game = MoonLanderGame()
+    game.set_clock_speed(600)  # Set the desired clock speed
     
     for genome_id, genome in genomes:
         net = neat.nn.FeedForwardNetwork.create(genome, config)
