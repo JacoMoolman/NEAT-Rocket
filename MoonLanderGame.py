@@ -134,9 +134,15 @@ class MoonLanderGame:
             # Update position
             self.position += self.velocity
 
-            # Keep the rocket within the screen bounds
-            self.position.x = max(0, min(self.position.x, self.WIDTH))
-            self.position.y = max(0, min(self.position.y, self.HEIGHT))
+            # Check if the rocket touches any wall
+            if (self.position.x <= 0 or self.position.x >= self.WIDTH or
+                self.position.y <= 0 or self.position.y >= self.HEIGHT):
+                self.landed = False
+                self.game_over = True
+            else:
+                # Keep the rocket within the screen bounds (for rendering purposes)
+                self.position.x = max(0, min(self.position.x, self.WIDTH))
+                self.position.y = max(0, min(self.position.y, self.HEIGHT))
 
             # Update rocket position and rotation
             self.rocket_rect.center = self.position
@@ -203,7 +209,7 @@ class MoonLanderGame:
         pygame.display.flip()
 
         # Tick the clock
-        self.clock.tick(60)
+        self.clock.tick(600)
 
         # Update time
         self.current_time += self.clock.get_time()
