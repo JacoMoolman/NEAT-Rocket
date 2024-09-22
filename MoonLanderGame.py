@@ -61,6 +61,9 @@ class MoonLanderGame:
         # Game state
         self.reset()
 
+        self.CLOCK_SPEED = 600  # New attribute to store the clock speed
+        self.TIME_SCALE = self.CLOCK_SPEED / 60  # Scale factor for time
+
     def initialize_display(self):
         if self.screen is None:
             self.screen = pygame.display.set_mode((self.WIDTH, self.HEIGHT))
@@ -176,10 +179,10 @@ class MoonLanderGame:
         self.draw()
 
         # Tick the clock
-        self.clock.tick(600)
+        self.clock.tick(self.CLOCK_SPEED)
 
-        # Update time
-        self.current_time += self.clock.get_time()
+        # Update time (scaled to match the increased clock speed)
+        self.current_time += self.clock.get_time() * self.TIME_SCALE
 
         # Calculate reward
         reward = 0
@@ -223,7 +226,7 @@ class MoonLanderGame:
         speed_surface = self.font.render(velocity_text, True, (255, 255, 255))
         self.screen.blit(speed_surface, (10, 10))
 
-        # Display current time
+        # Display current time (adjusted for the increased speed)
         time_text = f"Time: {self.current_time / 1000:.2f}"
         time_surface = self.font.render(time_text, True, (255, 255, 255))
         self.screen.blit(time_surface, (10, 50))

@@ -35,7 +35,7 @@ def eval_genomes(genomes, config):
             state, reward, done, _ = game.step(action)
             fitness += reward
 
-            if game.current_time > 20000:
+            if game.current_time > 20000:  # This is now equivalent to 2 seconds of real time
                 break
 
         genome.fitness = fitness
