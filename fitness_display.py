@@ -11,7 +11,7 @@ class FitnessDisplay:
 
         # Initialize a Surface to draw on
         self.surface = pygame.Surface((self.width, self.height))
-        self.surface.fill((0, 0, 0))  # Fill with black
+        self.surface.fill((255, 255, 255))  # Fill with white
 
         # Initialize font
         pygame.font.init()
@@ -38,7 +38,7 @@ class FitnessDisplay:
             self.avg_fitnesses.pop(0)
 
         # Clear the surface
-        self.surface.fill((0, 0, 0))
+        self.surface.fill((255, 255, 255))
 
         # Compute scaling factors
         max_fitness = max(self.fitnesses) if self.fitnesses else 1
@@ -51,8 +51,8 @@ class FitnessDisplay:
         y_scale = (self.height - 40) / fitness_range
 
         # Draw axes
-        pygame.draw.line(self.surface, (255, 255, 255), (20, 20), (20, self.height - 20))  # Y axis
-        pygame.draw.line(self.surface, (255, 255, 255), (20, self.height - 20), (self.width - 20, self.height - 20))  # X axis
+        pygame.draw.line(self.surface, (0, 0, 0), (20, 20), (20, self.height - 20))  # Y axis
+        pygame.draw.line(self.surface, (0, 0, 0), (20, self.height - 20), (self.width - 20, self.height - 20))  # X axis
 
         # Draw individual fitnesses
         if self.show_individual and len(self.fitnesses) > 1:
@@ -61,7 +61,7 @@ class FitnessDisplay:
                 y1 = self.height - 20 - (self.fitnesses[i - 1] - min_fitness) * y_scale
                 x2 = 20 + i * x_scale
                 y2 = self.height - 20 - (self.fitnesses[i] - min_fitness) * y_scale
-                pygame.draw.line(self.surface, (0, 255, 0), (x1, y1), (x2, y2), 2)
+                pygame.draw.line(self.surface, (0, 0, 255), (x1, y1), (x2, y2), 2)
 
         # Draw average fitness
         if len(self.avg_fitnesses) > 1:
@@ -73,11 +73,11 @@ class FitnessDisplay:
                 pygame.draw.line(self.surface, (255, 0, 0), (x1, y1), (x2, y2), 2)
 
         # Draw current fitness
-        fitness_text = self.font.render(f"Fitness: {fitness:.2f}", True, (255, 255, 255))
+        fitness_text = self.font.render(f"Fitness: {fitness:.2f}", True, (0, 0, 0))
         self.surface.blit(fitness_text, (20, 0))
 
         # Draw average fitness
-        avg_fitness_text = self.font.render(f"Avg Fitness: {avg_fitness:.2f}", True, (255, 255, 255))
+        avg_fitness_text = self.font.render(f"Avg Fitness: {avg_fitness:.2f}", True, (0, 0, 0))
         self.surface.blit(avg_fitness_text, (20, 20))
 
         return self.surface
