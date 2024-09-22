@@ -6,7 +6,7 @@ import random
 from fitness_display import FitnessDisplay
 
 class MoonLanderGame:
-    def __init__(self):
+    def __init__(self, show_individual_fitness=True):
         # Initialize Pygame
         pygame.init()
 
@@ -66,7 +66,7 @@ class MoonLanderGame:
         self.TIME_SCALE = self.CLOCK_SPEED / 60  # Scale factor for time
 
         # Add these lines after initializing the display
-        self.fitness_display = FitnessDisplay(200, 150, max_points=1000)  # Limit to 1000 points for performance
+        self.fitness_display = FitnessDisplay(200, 150, max_points=1000, show_individual=show_individual_fitness)  # Limit to 1000 points for performance
         self.fitness_surface = None
 
     def initialize_display(self):

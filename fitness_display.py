@@ -5,10 +5,11 @@ from collections import deque
 import numpy as np
 
 class FitnessDisplay:
-    def __init__(self, width, height, max_points=1000):
+    def __init__(self, width, height, max_points=1000, show_individual=True):
         self.width = width
         self.height = height
         self.max_points = max_points
+        self.show_individual = show_individual
         self.game_numbers = deque(maxlen=max_points)
         self.fitnesses = deque(maxlen=max_points)
         self.avg_fitnesses = deque(maxlen=max_points)
@@ -26,7 +27,8 @@ class FitnessDisplay:
         self.avg_fitnesses.append(np.mean(self.fitnesses))
 
         self.ax.clear()
-        self.ax.plot(list(self.game_numbers), list(self.fitnesses), label='Individual Fitness', alpha=0.5)
+        if self.show_individual:
+            self.ax.plot(list(self.game_numbers), list(self.fitnesses), label='Individual Fitness', alpha=0.5)
         self.ax.plot(list(self.game_numbers), list(self.avg_fitnesses), label='Average Fitness', color='r')
         self.ax.set_xlabel('Game Number', fontsize=8)
         self.ax.set_ylabel('Fitness', fontsize=8)

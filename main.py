@@ -16,7 +16,7 @@ def run_neat(config_file):
                          config_file)
 
     p = neat.Population(config)
-    game = MoonLanderGame()
+    game = MoonLanderGame(show_individual_fitness=False)
 
     best_fitnesses = []
     avg_fitnesses = []
