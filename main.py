@@ -3,9 +3,8 @@
 import neat
 import os
 import pickle
-import multiprocessing
-from MoonLanderGame import MoonLanderGame
 import pygame
+from MoonLanderGame import MoonLanderGame
 
 # Set the number of generations
 NUM_GENERATIONS = 5000
@@ -34,8 +33,6 @@ def run_neat(config_file):
         avg_fitness = sum(fitnesses) / len(fitnesses)
         best_fitnesses.append(best_fitness)
         avg_fitnesses.append(avg_fitness)
-
-        # We don't need to update the display here anymore
 
     p.add_reporter(neat.StdOutReporter(True))
     stats = neat.StatisticsReporter()
@@ -100,7 +97,7 @@ def evaluate_genome(net, game):
         state, reward, done, _ = game.step(action)
         fitness += reward
 
-        if game.current_time > 60000:  # This is now equivalent to 6 seconds of real time
+        if game.current_time > 60000:  # Equivalent to 60 seconds of real time
             break
 
     return fitness

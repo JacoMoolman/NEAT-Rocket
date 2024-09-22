@@ -17,8 +17,8 @@ class MoonLanderGame:
         self.clock = None
 
         # Game settings
-        self.MAX_LANDING_ANGLE = 40  # Maximum angle (in degrees) for safe landing
-        self.MAX_LANDING_SPEED = 5   # Maximum speed for safe landing
+        self.MAX_LANDING_ANGLE = 300  # Maximum angle (in degrees) for safe landing
+        self.MAX_LANDING_SPEED = 10   # Maximum speed for safe landing
 
         # Load and resize the rocket image
         self.rocket_img = pygame.image.load("Rocket.png")
@@ -65,8 +65,8 @@ class MoonLanderGame:
         self.CLOCK_SPEED = 600  # New attribute to store the clock speed
         self.TIME_SCALE = self.CLOCK_SPEED / 60  # Scale factor for time
 
-        # Add these lines after initializing the display
-        self.fitness_display = FitnessDisplay(200, 150, max_points=1000, show_individual=show_individual_fitness)  # Limit to 1000 points for performance
+        # Fitness display
+        self.fitness_display = FitnessDisplay(200, 150, max_points=1000, show_individual=show_individual_fitness)
         self.fitness_surface = None
 
     def initialize_display(self):
@@ -97,11 +97,19 @@ class MoonLanderGame:
         self.running = True
         self.score = 0
         self.thrust = False  # Reset thrust when resetting the game
+        self.rocket_rect.center = self.position
         return self.get_state()
+
+    def reset_rocket(self):
+        self.position = self.generate_rocket_position()
+        self.velocity = pygame.math.Vector2(0, 0)
+        self.angle = 0
+        self.thrust = False
+        self.landed = False
+        self.rocket_rect.center = self.position
 
     def get_state(self):
         # Return the current state of the game
-        # You can include position, velocity, angle, and distance to platform
         distance = self.platform_rect.center - self.position
         state = [
             self.position.x / self.WIDTH,
@@ -168,18 +176,29 @@ class MoonLanderGame:
             flames_offset = pygame.math.Vector2(0, rotated_rect.height * 0.75).rotate(-self.angle)  # Increased offset
             flames_pos = rotated_rect.center + flames_offset
 
+            # Initialize reward
+            reward = 0
+
             # Check for landing or crash
             if rotated_rect.colliderect(self.platform_rect):
                 if abs(self.angle) < self.MAX_LANDING_ANGLE and self.velocity.length() < self.MAX_LANDING_SPEED:
                     self.landed = True
-                    self.score += 100  # Reward for landing
-                    self.game_over = True
+                    self.score += 100  # Increase the score
+                    reward = 1000  # Reward for landing
+                    self.reset_rocket()
                 else:
                     self.landed = False
                     self.game_over = True
+                    reward = -100  # Penalty for crashing
             elif rotated_rect.bottom >= self.HEIGHT:
                 self.landed = False
                 self.game_over = True
+                reward = -100  # Penalty for crashing
+
+            if not self.game_over and not self.landed:
+                # Reward for getting closer to the platform
+                distance = self.platform_rect.center - self.position
+                reward = -distance.length() / 1000  # Normalize
 
         self.draw()
 
@@ -188,17 +207,6 @@ class MoonLanderGame:
 
         # Update time (scaled to match the increased clock speed)
         self.current_time += self.clock.get_time() * self.TIME_SCALE
-
-        # Calculate reward
-        reward = 0
-        if self.landed:
-            reward = 1000  # Reward for landing
-        elif self.game_over:
-            reward = -100  # Penalty for crashing
-        else:
-            # Reward for getting closer to the platform
-            distance = self.platform_rect.center - self.position
-            reward = -distance.length() / 1000  # Normalize
 
         # Get new state
         state = self.get_state()
@@ -236,17 +244,18 @@ class MoonLanderGame:
         time_surface = self.font.render(time_text, True, (255, 255, 255))
         self.screen.blit(time_surface, (10, 50))
 
+        # Display the score
+        score_text = f"Score: {self.score}"
+        score_surface = self.font.render(score_text, True, (255, 255, 255))
+        self.screen.blit(score_surface, (10, 90))
+
         # Update the game over message
-        if self.game_over and not self.landed:
+        if self.game_over:
             text = self.font.render("Crashed!", True, (255, 0, 0))
             text_rect = text.get_rect(center=(self.WIDTH // 2, self.HEIGHT // 2))
             self.screen.blit(text, text_rect)
-        elif self.game_over and self.landed:
-            text = self.font.render("Landed Successfully!", True, (0, 255, 0))
-            text_rect = text.get_rect(center=(self.WIDTH // 2, self.HEIGHT // 2))
-            self.screen.blit(text, text_rect)
 
-        # Add this at the end of the draw method
+        # Display the fitness graph
         if self.fitness_surface:
             self.screen.blit(self.fitness_surface, (self.WIDTH - 220, 20))
 
@@ -257,7 +266,7 @@ class MoonLanderGame:
         self.fitness_surface = self.fitness_display.update(game_number, fitness)
 
     def close(self):
-        # Add this line before closing pygame
+        # Close the fitness display and Pygame
         self.fitness_display.close()
         if self.screen is not None:
             pygame.quit()
