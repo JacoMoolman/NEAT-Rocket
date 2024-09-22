@@ -45,8 +45,8 @@ def eval_genomes(genomes, config):
 def create_config_file(config_path):
     config_content = """[NEAT]
 fitness_criterion     = max
-fitness_threshold     = 1000
-pop_size              = 50
+fitness_threshold     = 10000
+pop_size              = 100
 reset_on_extinction   = False
 
 [DefaultGenome]
