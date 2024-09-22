@@ -15,7 +15,7 @@ def run_neat(config_file):
                          config_file)
 
     p = neat.Population(config)
-    game = MoonLanderGame(show_individual_fitness=False)
+    game = MoonLanderGame(show_individual_fitness=True)
 
     best_fitnesses = []
     avg_fitnesses = []
@@ -97,7 +97,7 @@ def evaluate_genome(net, game):
         state, reward, done, _ = game.step(action)
         fitness += reward
 
-        if game.current_time > 60000:  # Equivalent to 60 seconds of real time
+        if game.current_time > 20000:  # Equivalent to 60 seconds of real time
             break
 
     return fitness

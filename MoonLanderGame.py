@@ -9,6 +9,10 @@ class MoonLanderGame:
     def __init__(self, show_individual_fitness=True):
         # Initialize Pygame
         pygame.init()
+        pygame.mixer.init()  # Initialize the mixer
+
+        # Load the beep sound
+        self.beep_sound = pygame.mixer.Sound("beep.mp3")
 
         # Set up the display
         self.WIDTH = 800
@@ -183,8 +187,9 @@ class MoonLanderGame:
             if rotated_rect.colliderect(self.platform_rect):
                 if abs(self.angle) < self.MAX_LANDING_ANGLE and self.velocity.length() < self.MAX_LANDING_SPEED:
                     self.landed = True
-                    self.score += 100  # Increase the score
+                    self.score += 1  # Increase the score
                     reward = 1000  # Reward for landing
+                    self.beep_sound.play()  # Play the beep sound
                     self.reset_rocket()
                 else:
                     self.landed = False
