@@ -197,7 +197,7 @@ class MoonLanderGame:
             # Compute reward based on change in distance
             if self.previous_distance is not None:
                 delta_distance = self.previous_distance - current_distance
-                reward += delta_distance / 10  # Scale reward
+                reward += delta_distance #/ 10  # Scale reward
             else:
                 reward += 0
 
@@ -272,6 +272,10 @@ class MoonLanderGame:
         # Update the game over message
         if self.game_over:
             text = self.font.render("Crashed!", True, (255, 0, 0))
+            text_rect = text.get_rect(center=(self.WIDTH // 2, self.HEIGHT // 2))
+            self.screen.blit(text, text_rect)
+        elif self.landed:
+            text = self.font.render("Landed!", True, (0, 255, 0))
             text_rect = text.get_rect(center=(self.WIDTH // 2, self.HEIGHT // 2))
             self.screen.blit(text, text_rect)
 
