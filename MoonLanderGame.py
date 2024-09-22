@@ -66,7 +66,7 @@ class MoonLanderGame:
         # Game state
         self.reset()
 
-        self.CLOCK_SPEED = 300  # Adjusted clock speed to normal
+        self.CLOCK_SPEED = 600  # Adjusted clock speed to normal
         self.TIME_SCALE = self.CLOCK_SPEED / 60  # Scale factor for time
 
         # Fitness display
