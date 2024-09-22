@@ -8,7 +8,7 @@ from MoonLanderGame import MoonLanderGame
 import pygame
 
 # Set the number of generations
-NUM_GENERATIONS = 500
+NUM_GENERATIONS = 5000
 
 def run_neat(config_file):
     config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
@@ -100,7 +100,7 @@ def evaluate_genome(net, game):
         state, reward, done, _ = game.step(action)
         fitness += reward
 
-        if game.current_time > 20000:  # This is now equivalent to 2 seconds of real time
+        if game.current_time > 60000:  # This is now equivalent to 6 seconds of real time
             break
 
     return fitness

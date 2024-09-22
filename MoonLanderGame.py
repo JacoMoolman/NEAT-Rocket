@@ -172,7 +172,7 @@ class MoonLanderGame:
             if rotated_rect.colliderect(self.platform_rect):
                 if abs(self.angle) < self.MAX_LANDING_ANGLE and self.velocity.length() < self.MAX_LANDING_SPEED:
                     self.landed = True
-                    self.score += 1000  # Reward for landing
+                    self.score += 100  # Reward for landing
                     self.game_over = True
                 else:
                     self.landed = False
