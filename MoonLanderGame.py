@@ -66,7 +66,7 @@ class MoonLanderGame:
         self.TIME_SCALE = self.CLOCK_SPEED / 60  # Scale factor for time
 
         # Add these lines after initializing the display
-        self.fitness_display = FitnessDisplay(200, 150)  # Create a small display
+        self.fitness_display = FitnessDisplay(200, 150, max_points=1000)  # Limit to 1000 points for performance
         self.fitness_surface = None
 
     def initialize_display(self):
@@ -253,8 +253,8 @@ class MoonLanderGame:
         # Update the display
         pygame.display.flip()
 
-    def update_fitness_display(self, generation, best_fitness, avg_fitness):
-        self.fitness_surface = self.fitness_display.update(generation, best_fitness, avg_fitness)
+    def update_fitness_display(self, game_number, fitness):
+        self.fitness_surface = self.fitness_display.update(game_number, fitness)
 
     def close(self):
         # Add this line before closing pygame

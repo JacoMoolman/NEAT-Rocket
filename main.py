@@ -20,22 +20,22 @@ def run_neat(config_file):
 
     best_fitnesses = []
     avg_fitnesses = []
+    fitnesses = []  # New list to store all fitnesses
 
     def eval_genomes(genomes, config):
-        fitnesses = []
         for genome_id, genome in genomes:
             net = neat.nn.FeedForwardNetwork.create(genome, config)
             fitness = evaluate_genome(net, game)
             genome.fitness = fitness
-            fitnesses.append(fitness)
+            fitnesses.append(fitness)  # Add each fitness to the list
+            game.update_fitness_display(len(fitnesses), fitness)  # Update display for each game
 
         best_fitness = max(fitnesses)
         avg_fitness = sum(fitnesses) / len(fitnesses)
         best_fitnesses.append(best_fitness)
         avg_fitnesses.append(avg_fitness)
 
-        generation = len(best_fitnesses)
-        game.update_fitness_display(generation, best_fitness, avg_fitness)
+        # We don't need to update the display here anymore
 
     p.add_reporter(neat.StdOutReporter(True))
     stats = neat.StatisticsReporter()
