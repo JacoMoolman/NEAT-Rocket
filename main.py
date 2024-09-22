@@ -19,28 +19,30 @@ def run_neat(config_file):
 
     best_fitnesses = []
     avg_fitnesses = []
-    fitnesses = []  # New list to store all fitnesses
+
+    p.add_reporter(neat.StdOutReporter(True))
+    stats = neat.StatisticsReporter()
+    p.add_reporter(stats)
 
     def eval_genomes(genomes, config):
+        fitnesses = []  # Reset fitnesses list for each generation
         for genome_id, genome in genomes:
             net = neat.nn.FeedForwardNetwork.create(genome, config)
             fitness = evaluate_genome(net, game)
             genome.fitness = fitness
-            fitnesses.append(fitness)  # Add each fitness to the list
-            game.update_fitness_display(len(fitnesses), fitness)  # Update display for each game
+            fitnesses.append(fitness)
+            game.update_fitness_display(len(fitnesses), fitness)
 
         best_fitness = max(fitnesses)
         avg_fitness = sum(fitnesses) / len(fitnesses)
         best_fitnesses.append(best_fitness)
         avg_fitnesses.append(avg_fitness)
 
-    p.add_reporter(neat.StdOutReporter(True))
-    stats = neat.StatisticsReporter()
-    p.add_reporter(stats)
-
-    winner = p.run(eval_genomes, NUM_GENERATIONS)
+    p.run(eval_genomes, NUM_GENERATIONS)
 
     # Save the winner
+    winner = p.best_genome
+
     with open('best_genome.pkl', 'wb') as f:
         pickle.dump(winner, f)
 
@@ -66,9 +68,9 @@ def visualize_winner(winner, config):
         output = net.activate(state)
 
         # Convert network output to actions
-        rotate_left = output[0] > 0.5
-        rotate_right = output[1] > 0.5
-        thrust = output[2] > 0.5
+        rotate_left = output[0] > 0.0
+        rotate_right = output[1] > 0.0
+        thrust = output[2] > 0.0
 
         action = (rotate_left, rotate_right, thrust)
 
@@ -81,24 +83,24 @@ def evaluate_genome(net, game):
     state = game.reset()
     done = False
     fitness = 0
+    steps = 0
+    max_steps = 1000  # Limit the number of steps per genome
 
-    while not done:
+    while not done and steps < max_steps:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 return 0
 
         output = net.activate(state)
-        rotate_left = output[0] > 0.5
-        rotate_right = output[1] > 0.5
-        thrust = output[2] > 0.5
+        rotate_left = output[0] > 0.0
+        rotate_right = output[1] > 0.0
+        thrust = output[2] > 0.0
         action = (rotate_left, rotate_right, thrust)
 
         state, reward, done, _ = game.step(action)
         fitness += reward
-
-        if game.current_time > 20000:  # Equivalent to 60 seconds of real time
-            break
+        steps += 1
 
     return fitness
 
