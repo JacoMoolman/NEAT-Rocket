@@ -21,7 +21,7 @@ class MoonLanderGame:
         self.clock = None
 
         # Game settings
-        self.MAX_LANDING_ANGLE = 15  # Maximum angle (in degrees) for safe landing
+        self.MAX_LANDING_ANGLE = 40  # Maximum angle (in degrees) for safe landing
         self.MAX_LANDING_SPEED = 5   # Maximum speed for safe landing
 
         # Load and resize the rocket image
@@ -66,11 +66,11 @@ class MoonLanderGame:
         # Game state
         self.reset()
 
-        self.CLOCK_SPEED = 1000  # Adjusted clock speed to normal
+        self.CLOCK_SPEED = 200  # Adjusted clock speed to normal
         self.TIME_SCALE = self.CLOCK_SPEED / 60  # Scale factor for time
 
         # Fitness display
-        self.fitness_display = FitnessDisplay(200, 150, max_points=200, show_individual=show_individual_fitness)
+        self.fitness_display = FitnessDisplay(200, 150, max_points=1000, show_individual=show_individual_fitness)
         self.fitness_surface = None
 
         self.game_number = 0  # Initialize game number here
@@ -271,15 +271,15 @@ class MoonLanderGame:
         score_surface = self.font.render(score_text, True, (255, 255, 255))
         self.screen.blit(score_surface, (10, 90))
 
-        # Update the game over message
-        if self.game_over:
-            text = self.font.render("Crashed!", True, (255, 0, 0))
-            text_rect = text.get_rect(center=(self.WIDTH // 2, self.HEIGHT // 2))
-            self.screen.blit(text, text_rect)
-        elif self.landed:
-            text = self.font.render("Landed!", True, (0, 255, 0))
-            text_rect = text.get_rect(center=(self.WIDTH // 2, self.HEIGHT // 2))
-            self.screen.blit(text, text_rect)
+        # # Update the game over message
+        # if self.game_over:
+        #     text = self.font.render("Crashed!", True, (255, 0, 0))
+        #     text_rect = text.get_rect(center=(self.WIDTH // 2, self.HEIGHT // 2))
+        #     self.screen.blit(text, text_rect)
+        # elif self.landed:
+        #     text = self.font.render("Landed!", True, (0, 255, 0))
+        #     text_rect = text.get_rect(center=(self.WIDTH // 2, self.HEIGHT // 2))
+        #     self.screen.blit(text, text_rect)
 
         # Display the fitness graph
         if self.fitness_surface:

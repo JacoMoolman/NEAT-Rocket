@@ -7,7 +7,7 @@ import pygame
 from MoonLanderGame import MoonLanderGame
 
 # Set the number of generations
-NUM_GENERATIONS = 5000
+NUM_GENERATIONS = 50000
 
 def run_neat(config_file):
     config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
