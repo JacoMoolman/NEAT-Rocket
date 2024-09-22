@@ -12,6 +12,10 @@ class FitnessDisplay:
         self.fig, self.ax = plt.subplots(figsize=(width/100, height/100), dpi=100)
         self.canvas = FigureCanvasAgg(self.fig)
 
+        # Set smaller font sizes
+        plt.rcParams.update({'font.size': 8})  # Default font size
+        self.ax.tick_params(axis='both', which='major', labelsize=6)  # Tick label font size
+
     def update(self, generation, best_fitness, avg_fitness):
         self.generations.append(generation)
         self.best_fitnesses.append(best_fitness)
@@ -20,10 +24,10 @@ class FitnessDisplay:
         self.ax.clear()
         self.ax.plot(self.generations, self.best_fitnesses, label='Best Fitness')
         self.ax.plot(self.generations, self.avg_fitnesses, label='Average Fitness')
-        self.ax.set_xlabel('Generation')
-        self.ax.set_ylabel('Fitness')
-        self.ax.set_title('Fitness over Generations')
-        self.ax.legend()
+        self.ax.set_xlabel('Generation', fontsize=8)
+        self.ax.set_ylabel('Fitness', fontsize=8)
+        self.ax.set_title('Fitness over Generations', fontsize=10)
+        self.ax.legend(fontsize=6)
 
         self.canvas.draw()
         renderer = self.canvas.get_renderer()

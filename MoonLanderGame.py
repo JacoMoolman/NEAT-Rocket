@@ -3,6 +3,7 @@
 import pygame
 import math
 import random
+from fitness_display import FitnessDisplay
 
 class MoonLanderGame:
     def __init__(self):
@@ -63,6 +64,10 @@ class MoonLanderGame:
 
         self.CLOCK_SPEED = 600  # New attribute to store the clock speed
         self.TIME_SCALE = self.CLOCK_SPEED / 60  # Scale factor for time
+
+        # Add these lines after initializing the display
+        self.fitness_display = FitnessDisplay(200, 150)  # Create a small display
+        self.fitness_surface = None
 
     def initialize_display(self):
         if self.screen is None:
@@ -241,10 +246,19 @@ class MoonLanderGame:
             text_rect = text.get_rect(center=(self.WIDTH // 2, self.HEIGHT // 2))
             self.screen.blit(text, text_rect)
 
+        # Add this at the end of the draw method
+        if self.fitness_surface:
+            self.screen.blit(self.fitness_surface, (self.WIDTH - 220, 20))
+
         # Update the display
         pygame.display.flip()
 
+    def update_fitness_display(self, generation, best_fitness, avg_fitness):
+        self.fitness_surface = self.fitness_display.update(generation, best_fitness, avg_fitness)
+
     def close(self):
+        # Add this line before closing pygame
+        self.fitness_display.close()
         if self.screen is not None:
             pygame.quit()
             self.screen = None
