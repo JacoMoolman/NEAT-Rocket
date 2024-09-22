@@ -1,57 +1,86 @@
+# fitness_display.py
+
 import pygame
-import matplotlib.pyplot as plt
-from matplotlib.backends.backend_agg import FigureCanvasAgg
-from collections import deque
-import numpy as np
 
 class FitnessDisplay:
-    def __init__(self, width, height, max_points=1000, show_individual=True):
+    def __init__(self, width, height, max_points=200, show_individual=True):
         self.width = width
         self.height = height
         self.max_points = max_points
         self.show_individual = show_individual
-        self.game_numbers = deque(maxlen=max_points)
-        self.fitnesses = deque(maxlen=max_points)
-        self.avg_fitnesses = deque(maxlen=max_points)
-        self.fig, self.ax = plt.subplots(figsize=(width/100, height/100), dpi=100)
-        self.canvas = FigureCanvasAgg(self.fig)
 
-        plt.rcParams.update({'font.size': 8})
-        self.ax.tick_params(axis='both', which='major', labelsize=6)
+        # Initialize a Surface to draw on
+        self.surface = pygame.Surface((self.width, self.height))
+        self.surface.fill((0, 0, 0))  # Fill with black
+
+        # Initialize font
+        pygame.font.init()
+        self.font = pygame.font.Font(None, 20)
+
+        # Initialize lists to store fitness data
+        self.fitnesses = []
+        self.avg_fitnesses = []
 
     def update(self, game_number, fitness):
-        self.game_numbers.append(game_number)
+        # Append the fitness to the list
         self.fitnesses.append(fitness)
-        
-        # Calculate the average fitness up to this point
-        self.avg_fitnesses.append(np.mean(self.fitnesses))
 
-        self.ax.clear()
-        if self.show_individual:
-            self.ax.plot(self.game_numbers, self.fitnesses, label='Individual Fitness', alpha=0.5)
-        self.ax.plot(self.game_numbers, self.avg_fitnesses, label='Average Fitness', color='r')
-        self.ax.set_xlabel('Game Number', fontsize=8)
-        self.ax.set_ylabel('Fitness', fontsize=8)
-        self.ax.set_title('Fitness per Game', fontsize=10)
-        self.ax.legend(fontsize=6)
+        # Limit the size of the fitnesses list
+        if len(self.fitnesses) > self.max_points:
+            self.fitnesses.pop(0)
 
-        # Set x-axis limits to show only the last max_points
-        if len(self.game_numbers) > 1:
-            self.ax.set_xlim(self.game_numbers[0], self.game_numbers[-1])
+        # Calculate average fitness
+        avg_fitness = sum(self.fitnesses) / len(self.fitnesses)
+        self.avg_fitnesses.append(avg_fitness)
 
-        # Adjust y-axis limits dynamically
-        min_fitness = min(min(self.fitnesses), min(self.avg_fitnesses))
-        max_fitness = max(max(self.fitnesses), max(self.avg_fitnesses))
-        y_range = max_fitness - min_fitness
-        if y_range == 0:
-            y_range = 1  # Prevent division by zero
-        self.ax.set_ylim(min_fitness - 0.1 * y_range, max_fitness + 0.1 * y_range)
+        # Limit the size of avg_fitnesses list
+        if len(self.avg_fitnesses) > self.max_points:
+            self.avg_fitnesses.pop(0)
 
-        self.canvas.draw()
-        renderer = self.canvas.get_renderer()
-        raw_data = renderer.tostring_rgb()
-        size = self.canvas.get_width_height()
-        return pygame.image.fromstring(raw_data, size, "RGB")
+        # Clear the surface
+        self.surface.fill((0, 0, 0))
+
+        # Compute scaling factors
+        max_fitness = max(self.fitnesses) if self.fitnesses else 1
+        min_fitness = min(self.fitnesses) if self.fitnesses else 0
+        if max_fitness == min_fitness:
+            max_fitness += 1  # Avoid division by zero
+        fitness_range = max_fitness - min_fitness
+
+        x_scale = (self.width - 40) / (len(self.fitnesses) - 1 if len(self.fitnesses) > 1 else 1)
+        y_scale = (self.height - 40) / fitness_range
+
+        # Draw axes
+        pygame.draw.line(self.surface, (255, 255, 255), (20, 20), (20, self.height - 20))  # Y axis
+        pygame.draw.line(self.surface, (255, 255, 255), (20, self.height - 20), (self.width - 20, self.height - 20))  # X axis
+
+        # Draw individual fitnesses
+        if self.show_individual and len(self.fitnesses) > 1:
+            for i in range(1, len(self.fitnesses)):
+                x1 = 20 + (i - 1) * x_scale
+                y1 = self.height - 20 - (self.fitnesses[i - 1] - min_fitness) * y_scale
+                x2 = 20 + i * x_scale
+                y2 = self.height - 20 - (self.fitnesses[i] - min_fitness) * y_scale
+                pygame.draw.line(self.surface, (0, 255, 0), (x1, y1), (x2, y2), 2)
+
+        # Draw average fitness
+        if len(self.avg_fitnesses) > 1:
+            for i in range(1, len(self.avg_fitnesses)):
+                x1 = 20 + (i - 1) * x_scale
+                y1 = self.height - 20 - (self.avg_fitnesses[i - 1] - min_fitness) * y_scale
+                x2 = 20 + i * x_scale
+                y2 = self.height - 20 - (self.avg_fitnesses[i] - min_fitness) * y_scale
+                pygame.draw.line(self.surface, (255, 0, 0), (x1, y1), (x2, y2), 2)
+
+        # Draw current fitness
+        fitness_text = self.font.render(f"Fitness: {fitness:.2f}", True, (255, 255, 255))
+        self.surface.blit(fitness_text, (20, 0))
+
+        # Draw average fitness
+        avg_fitness_text = self.font.render(f"Avg Fitness: {avg_fitness:.2f}", True, (255, 255, 255))
+        self.surface.blit(avg_fitness_text, (20, 20))
+
+        return self.surface
 
     def close(self):
-        plt.close(self.fig)
+        pass  # No resources to close
