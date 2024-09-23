@@ -63,7 +63,7 @@ class MoonLanderGame:
         # Game state
         self.reset()
 
-        self.CLOCK_SPEED = 200  # Adjusted clock speed to normal
+        self.CLOCK_SPEED = 400  # Adjusted clock speed to normal
         self.TIME_SCALE = self.CLOCK_SPEED / 60  # Scale factor for time
 
         # Fitness display
@@ -71,6 +71,7 @@ class MoonLanderGame:
         self.fitness_surface = None
 
         self.game_number = 0  # Initialize game number here
+        self.population_number = 0
 
     def initialize_display(self):
         if self.screen is None:
@@ -268,15 +269,10 @@ class MoonLanderGame:
         score_surface = self.font.render(score_text, True, (255, 255, 255))
         self.screen.blit(score_surface, (10, 90))
 
-        # # Update the game over message
-        # if self.game_over:
-        #     text = self.font.render("Crashed!", True, (255, 0, 0))
-        #     text_rect = text.get_rect(center=(self.WIDTH // 2, self.HEIGHT // 2))
-        #     self.screen.blit(text, text_rect)
-        # elif self.landed:
-        #     text = self.font.render("Landed!", True, (0, 255, 0))
-        #     text_rect = text.get_rect(center=(self.WIDTH // 2, self.HEIGHT // 2))
-        #     self.screen.blit(text, text_rect)
+        # Display the population number
+        population_text = f"Member #: {self.population_number}"
+        population_surface = self.font.render(population_text, True, (255, 255, 255))
+        self.screen.blit(population_surface, (10, 130))
 
         # Display the fitness graph
         if self.fitness_surface:
@@ -287,6 +283,7 @@ class MoonLanderGame:
 
     def update_fitness_display(self, game_number, fitness):
         self.fitness_surface = self.fitness_display.update(game_number, fitness)
+        self.population_number = game_number
 
     def close(self):
         # Close the fitness display and Pygame

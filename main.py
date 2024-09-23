@@ -8,6 +8,7 @@ from MoonLanderGame import MoonLanderGame
 
 # Set the number of generations
 NUM_GENERATIONS = 50000
+MAX_STEPS = 10000
 
 def run_neat(config_file):
     config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
@@ -97,7 +98,7 @@ def evaluate_genome(net, game):
     done = False
     fitness = 0
     steps = 0
-    max_steps = 1000  # Limit the number of steps per genome
+    max_steps = MAX_STEPS  # Limit the number of steps per genome
 
     while not done and steps < max_steps:
         for event in pygame.event.get():
