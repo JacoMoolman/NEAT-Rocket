@@ -21,8 +21,8 @@ class MoonLanderGame:
         self.clock = None
 
         # Game settings
-        self.MAX_LANDING_ANGLE = 40  # Maximum angle (in degrees) for safe landing
-        self.MAX_LANDING_SPEED = 5   # Maximum speed for safe landing
+        self.MAX_LANDING_ANGLE = 360  # Maximum angle (in degrees) for safe landing
+        self.MAX_LANDING_SPEED = 10   # Maximum speed for safe landing
 
         # Load and resize the rocket image
         self.rocket_img = pygame.image.load("Rocket.png")
@@ -38,13 +38,6 @@ class MoonLanderGame:
         # Platform properties
         self.PLATFORM_WIDTH = 100
         self.PLATFORM_HEIGHT = 10
-
-        # Calculate the box where the platform can appear (20% smaller than the window)
-        self.MARGIN = 0.1  # 10% margin on each side
-        self.BOX_LEFT = int(self.WIDTH * self.MARGIN)
-        self.BOX_RIGHT = int(self.WIDTH * (1 - self.MARGIN))
-        self.BOX_TOP = int(self.HEIGHT * self.MARGIN)
-        self.BOX_BOTTOM = int(self.HEIGHT * (1 - self.MARGIN))
 
         # Calculate the box where the rocket can start (top 20% of the screen)
         self.ROCKET_START_MARGIN = 0.2  # 20% of the screen height
@@ -82,8 +75,8 @@ class MoonLanderGame:
             self.clock = pygame.time.Clock()
 
     def generate_platform_position(self):
-        x = random.randint(self.BOX_LEFT, self.BOX_RIGHT - self.PLATFORM_WIDTH)
-        y = random.randint(self.BOX_TOP, self.BOX_BOTTOM - self.PLATFORM_HEIGHT)
+        x = (self.WIDTH - self.PLATFORM_WIDTH) // 2
+        y = (self.HEIGHT - self.PLATFORM_HEIGHT) // 1
         return pygame.Rect(x, y, self.PLATFORM_WIDTH, self.PLATFORM_HEIGHT)
 
     def generate_rocket_position(self):
