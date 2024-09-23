@@ -80,19 +80,24 @@ class MoonLanderGame:
         return pygame.Rect(x, y, self.PLATFORM_WIDTH, self.PLATFORM_HEIGHT)
 
     def generate_rocket_position(self):
-        x = random.randint(self.ROCKET_START_LEFT, self.ROCKET_START_RIGHT)
-        y = random.randint(self.ROCKET_START_TOP, self.ROCKET_START_BOTTOM)
-        return pygame.math.Vector2(x, y)
+        while True:
+            x = random.randint(self.ROCKET_START_LEFT, self.ROCKET_START_RIGHT)
+            y = random.randint(self.ROCKET_START_TOP, self.ROCKET_START_BOTTOM)
+            rocket_position = pygame.math.Vector2(x, y)
+            platform_left = self.platform_rect.left
+            platform_right = self.platform_rect.right
+            if not (platform_left <= x <= platform_right):  # Ensure the rocket is not directly above the platform
+                return rocket_position
 
     def reset(self):
         self.initialize_display()
-        self.position = self.generate_rocket_position()
+        self.platform_rect = self.generate_platform_position()  # Generate platform position first
+        self.position = self.generate_rocket_position()  # Then generate rocket position
         self.velocity = pygame.math.Vector2(0, 0)
         self.angle = 0
         self.game_over = False
         self.landed = False
         self.current_time = 0  # Reset the timer
-        self.platform_rect = self.generate_platform_position()
         self.running = True
         self.score = 0
         self.thrust = False  # Reset thrust when resetting the game
