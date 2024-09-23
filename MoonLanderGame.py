@@ -47,7 +47,7 @@ class MoonLanderGame:
         self.ROCKET_START_RIGHT = int(self.WIDTH * 0.9)  # 10% from the right edge
 
         # Set the X and Y coordinates for rocket spawn
-        self.ROCKET_START_X_OPTIONS = [50, 700]  # Add options for rocket start X coordinate
+        self.ROCKET_START_X = 50  # Set the X coordinate for rocket spawn
         self.ROCKET_START_Y = 50  # Set the Y coordinate for rocket spawn
 
         # Physics constants
@@ -77,6 +77,8 @@ class MoonLanderGame:
         self.LOW_SPEED_THRESHOLD = 0.9
         self.MAX_LOW_SPEED_DURATION = 5000  # 5 seconds in milliseconds
 
+        self.current_fitness = 0
+
     def initialize_display(self):
         if self.screen is None:
             self.screen = pygame.display.set_mode((self.WIDTH, self.HEIGHT))
@@ -89,7 +91,7 @@ class MoonLanderGame:
         return pygame.Rect(x, y, self.PLATFORM_WIDTH, self.PLATFORM_HEIGHT)
 
     def generate_rocket_position(self):
-        x = random.choice(self.ROCKET_START_X_OPTIONS)  # Randomly choose between 50 and 200
+        x = self.ROCKET_START_X
         y = self.ROCKET_START_Y
         return pygame.math.Vector2(x, y)
 
@@ -107,6 +109,7 @@ class MoonLanderGame:
         self.thrust = False  # Reset thrust when resetting the game
         self.rocket_rect.center = self.position
         self.previous_distance = None  # Initialize previous_distance
+        self.current_fitness = 0
         return self.get_state()
 
     def reset_rocket(self):
@@ -247,6 +250,8 @@ class MoonLanderGame:
         # Get new state
         state = self.get_state()
 
+        self.current_fitness += reward
+
         return state, reward, self.game_over, {}
 
     def draw(self):
@@ -280,10 +285,10 @@ class MoonLanderGame:
         time_surface = self.font.render(time_text, True, (255, 255, 255))
         self.screen.blit(time_surface, (10, 50))
 
-        # Display the score
-        score_text = f"Score: {self.score}"
-        score_surface = self.font.render(score_text, True, (255, 255, 255))
-        self.screen.blit(score_surface, (10, 90))
+        # Display the current fitness
+        fitness_text = f"Current Fitness: {self.current_fitness:.2f}"
+        fitness_surface = self.font.render(fitness_text, True, (255, 255, 255))
+        self.screen.blit(fitness_surface, (10, 90))
 
         # Display the population number
         population_text = f"Member #: {self.population_number}"

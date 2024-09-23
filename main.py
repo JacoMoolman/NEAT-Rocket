@@ -96,7 +96,6 @@ def visualize_winner(winner, config):
 def evaluate_genome(net, game):
     state = game.reset()
     done = False
-    fitness = 0
     steps = 0
     max_steps = MAX_STEPS  # Limit the number of steps per genome
 
@@ -113,10 +112,9 @@ def evaluate_genome(net, game):
         action = (rotate_left, rotate_right, thrust)
 
         state, reward, done, _ = game.step(action)
-        fitness += reward
         steps += 1
 
-    return fitness
+    return game.current_fitness  # Return the current fitness from the game
 
 if __name__ == '__main__':
     local_dir = os.path.dirname(__file__)
