@@ -17,12 +17,20 @@ def run_neat(config_file):
     p = neat.Population(config)
     game = MoonLanderGame(show_individual_fitness=True)
 
+    # Load the best genome if it exists
+    if os.path.exists('best_genome.pkl'):
+        with open('best_genome.pkl', 'rb') as f:
+            best_genome = pickle.load(f)
+            p.population[best_genome.key] = best_genome
+
     best_fitnesses = []
     avg_fitnesses = []
 
     p.add_reporter(neat.StdOutReporter(True))
     stats = neat.StatisticsReporter()
     p.add_reporter(stats)
+
+    fitness_threshold = config.fitness_threshold  # Get the fitness threshold from the config
 
     def eval_genomes(genomes, config):
         fitnesses = []  # Reset fitnesses list for each generation
@@ -32,6 +40,11 @@ def run_neat(config_file):
             genome.fitness = fitness
             fitnesses.append(fitness)
             game.update_fitness_display(len(fitnesses), fitness)
+
+            # Save the genome if it meets or exceeds the fitness threshold
+            if fitness >= fitness_threshold:
+                with open('best_genome.pkl', 'wb') as f:
+                    pickle.dump(genome, f)
 
         best_fitness = max(fitnesses)
         avg_fitness = sum(fitnesses) / len(fitnesses)
