@@ -73,6 +73,10 @@ class MoonLanderGame:
         self.game_number = 0  # Initialize game number here
         self.population_number = 0
 
+        self.low_speed_start_time = None
+        self.LOW_SPEED_THRESHOLD = 0.9
+        self.MAX_LOW_SPEED_DURATION = 5000  # 5 seconds in milliseconds
+
     def initialize_display(self):
         if self.screen is None:
             self.screen = pygame.display.set_mode((self.WIDTH, self.HEIGHT))
@@ -167,6 +171,18 @@ class MoonLanderGame:
 
             # Update position
             self.position += self.velocity
+
+            # Check for low speed condition
+            current_speed = self.velocity.length()
+            if 0 < current_speed < self.LOW_SPEED_THRESHOLD:
+                if self.low_speed_start_time is None:
+                    self.low_speed_start_time = self.current_time
+                elif self.current_time - self.low_speed_start_time > self.MAX_LOW_SPEED_DURATION:
+                    self.landed = False
+                    self.game_over = True
+                    reward = -100  # Penalty for crashing
+            else:
+                self.low_speed_start_time = None
 
             # Check if the rocket touches any wall
             if (self.position.x <= 0 or self.position.x >= self.WIDTH or
