@@ -216,7 +216,7 @@ class MoonLanderGame:
             # Compute reward based on change in distance
             if self.previous_distance is not None:
                 delta_distance = self.previous_distance - current_distance
-                reward += delta_distance #/ 10  # Scale reward
+                reward += delta_distance  # Scale reward
             else:
                 reward += 0
 

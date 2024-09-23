@@ -18,11 +18,17 @@ def run_neat(config_file):
     p = neat.Population(config)
     game = MoonLanderGame(show_individual_fitness=True)
 
-    # Load the best genome if it exists
+    # Load the best genome if it exists and is valid
     if os.path.exists('best_genome.pkl'):
         with open('best_genome.pkl', 'rb') as f:
             best_genome = pickle.load(f)
-            p.population[best_genome.key] = best_genome
+            if best_genome is not None:
+                if hasattr(best_genome, 'key'):
+                    p.population[best_genome.key] = best_genome
+                else:
+                    print("Loaded best_genome does not have a 'key' attribute. Ignoring.")
+            else:
+                print("best_genome.pkl is empty or corrupted. Ignoring.")
 
     best_fitnesses = []
     avg_fitnesses = []
@@ -33,7 +39,11 @@ def run_neat(config_file):
 
     fitness_threshold = config.fitness_threshold  # Get the fitness threshold from the config
 
+    # Flag to indicate if the fitness threshold is reached
+    fitness_threshold_reached = False
+
     def eval_genomes(genomes, config):
+        nonlocal fitness_threshold_reached  # Declare as nonlocal to modify the outer scope variable
         fitnesses = []  # Reset fitnesses list for each generation
         for genome_id, genome in genomes:
             net = neat.nn.FeedForwardNetwork.create(genome, config)
@@ -46,17 +56,22 @@ def run_neat(config_file):
             if fitness >= fitness_threshold:
                 with open('best_genome.pkl', 'wb') as f:
                     pickle.dump(genome, f)
+                # Set the flag to True
+                fitness_threshold_reached = True
 
         best_fitness = max(fitnesses)
         avg_fitness = sum(fitnesses) / len(fitnesses)
         best_fitnesses.append(best_fitness)
         avg_fitnesses.append(avg_fitness)
 
-    p.run(eval_genomes, NUM_GENERATIONS)
+    # Run NEAT's evolution process
+    winner = p.run(eval_genomes, NUM_GENERATIONS)
+
+    # Check if fitness threshold was reached
+    if fitness_threshold_reached:
+        print("Fitness threshold reached, evolution stopped.")
 
     # Save the winner
-    winner = p.best_genome
-
     with open('best_genome.pkl', 'wb') as f:
         pickle.dump(winner, f)
 
