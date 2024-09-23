@@ -46,6 +46,10 @@ class MoonLanderGame:
         self.ROCKET_START_LEFT = int(self.WIDTH * 0.1)  # 10% from the left edge
         self.ROCKET_START_RIGHT = int(self.WIDTH * 0.9)  # 10% from the right edge
 
+        # Set the X and Y coordinates for rocket spawn
+        self.ROCKET_START_X = 50  # Set the X coordinate for rocket spawn
+        self.ROCKET_START_Y = 50  # Set the Y coordinate for rocket spawn
+
         # Physics constants
         self.GRAVITY = 0.1
         self.THRUST = 0.2
@@ -80,14 +84,9 @@ class MoonLanderGame:
         return pygame.Rect(x, y, self.PLATFORM_WIDTH, self.PLATFORM_HEIGHT)
 
     def generate_rocket_position(self):
-        while True:
-            x = random.randint(self.ROCKET_START_LEFT, self.ROCKET_START_RIGHT)
-            y = random.randint(self.ROCKET_START_TOP, self.ROCKET_START_BOTTOM)
-            rocket_position = pygame.math.Vector2(x, y)
-            platform_left = self.platform_rect.left
-            platform_right = self.platform_rect.right
-            if not (platform_left <= x <= platform_right):  # Ensure the rocket is not directly above the platform
-                return rocket_position
+        x = self.ROCKET_START_X
+        y = self.ROCKET_START_Y
+        return pygame.math.Vector2(x, y)
 
     def reset(self):
         self.initialize_display()
