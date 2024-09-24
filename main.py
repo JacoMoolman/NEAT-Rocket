@@ -9,6 +9,7 @@ from MoonLanderGame import MoonLanderGame
 # Set the number of generations
 NUM_GENERATIONS = 50000
 MAX_STEPS = 10000
+SAVEGENOMEINTERVAL=1
 
 def run_neat(config_file):
     print("Starting run_neat function")
@@ -17,34 +18,32 @@ def run_neat(config_file):
                          config_file)
     print("NEAT config loaded")
 
-    p = neat.Population(config)
-    print("Population created")
+    # Check if a checkpoint exists and restore from it
+    checkpoint_prefix = 'neat-checkpoint-'
+    checkpoint_files = [f for f in os.listdir('.') if f.startswith(checkpoint_prefix)]
+    if checkpoint_files:
+        # Get the latest checkpoint file
+        latest_checkpoint = max(checkpoint_files, key=os.path.getctime)
+        print(f"Restoring from checkpoint {latest_checkpoint}")
+        p = neat.Checkpointer.restore_checkpoint(latest_checkpoint)
+    else:
+        p = neat.Population(config)
+        print("Population created")
+
     game = MoonLanderGame(show_individual_fitness=True)
     print("Game instance created")
-
-    # Load the best genome if it exists
-    print("Attempting to load best genome")
-    if os.path.exists('best_genome.pkl'):
-        print("best_genome.pkl found")
-        try:
-            with open('best_genome.pkl', 'rb') as f:
-                best_genome = pickle.load(f)
-            if isinstance(best_genome, neat.genome.DefaultGenome):
-                p.population[best_genome.key] = best_genome
-                print("Successfully loaded best genome")
-            else:
-                print("Loaded object is not a valid genome. Starting with a fresh population.")
-        except Exception as e:
-            print(f"Error loading best genome: {e}. Starting with a fresh population.")
-    else:
-        print("best_genome.pkl not found. Starting with a fresh population.")
 
     best_fitnesses = []
     avg_fitnesses = []
 
+    # Add reporters to track progress
     p.add_reporter(neat.StdOutReporter(True))
     stats = neat.StatisticsReporter()
     p.add_reporter(stats)
+
+    # Add the Checkpointer to save checkpoints every N generations
+    # Adjust generation_interval as needed
+    p.add_reporter(neat.Checkpointer(generation_interval=SAVEGENOMEINTERVAL, filename_prefix='neat-checkpoint-'))
 
     fitness_threshold = config.fitness_threshold  # Get the fitness threshold from the config
 
@@ -63,13 +62,10 @@ def run_neat(config_file):
 
             # Save the genome if it meets or exceeds the fitness threshold
             if fitness >= fitness_threshold:
-                try:
-                    with open('best_genome.pkl', 'wb') as f:
-                        pickle.dump(genome, f)
-                    print(f"Saved new best genome with fitness: {fitness}")
-                    fitness_threshold_reached = True
-                except Exception as e:
-                    print(f"Error saving best genome: {e}")
+                with open('best_genome.pkl', 'wb') as f:
+                    pickle.dump(genome, f)
+                # Set the flag to True
+                fitness_threshold_reached = True
 
         best_fitness = max(fitnesses)
         avg_fitness = sum(fitnesses) / len(fitnesses)
@@ -130,7 +126,7 @@ def evaluate_genome(net, game):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
-                return 0.0  # Return 0.0 instead of 0
+                return 0
 
         output = net.activate(state)
         rotate_left = output[0] > 0.0
@@ -141,7 +137,7 @@ def evaluate_genome(net, game):
         state, reward, done, _ = game.step(action)
         steps += 1
 
-    return max(game.current_fitness, 0.0)  # Ensure fitness is never negative
+    return game.current_fitness  # Return the current fitness from the game
 
 if __name__ == '__main__':
     local_dir = os.path.dirname(__file__)
