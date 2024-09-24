@@ -11,15 +11,21 @@ NUM_GENERATIONS = 50000
 MAX_STEPS = 10000
 
 def run_neat(config_file):
+    print("Starting run_neat function")
     config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
                          neat.DefaultSpeciesSet, neat.DefaultStagnation,
                          config_file)
+    print("NEAT config loaded")
 
     p = neat.Population(config)
+    print("Population created")
     game = MoonLanderGame(show_individual_fitness=True)
+    print("Game instance created")
 
     # Load the best genome if it exists and is valid
+    print("Attempting to load best genome")
     if os.path.exists('best_genome.pkl'):
+        print("best_genome.pkl found")
         with open('best_genome.pkl', 'rb') as f:
             best_genome = pickle.load(f)
             if best_genome is not None:
@@ -29,6 +35,8 @@ def run_neat(config_file):
                     print("Loaded best_genome does not have a 'key' attribute. Ignoring.")
             else:
                 print("best_genome.pkl is empty or corrupted. Ignoring.")
+    else:
+        print("best_genome.pkl not found")  
 
     best_fitnesses = []
     avg_fitnesses = []
