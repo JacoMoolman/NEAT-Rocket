@@ -38,6 +38,11 @@ class MoonLanderGame:
         # Platform properties
         self.PLATFORM_WIDTH = 100
         self.PLATFORM_HEIGHT = 10
+        self.PLATFORM_Y = self.HEIGHT - self.PLATFORM_HEIGHT // 2  # Fixed Y position for the platform
+
+        # Set the X coordinates for platform and rocket spawn
+        self.SPAWN_LEFT = int(self.WIDTH * 0.1)  # 10% from the left edge
+        self.SPAWN_RIGHT = int(self.WIDTH * 0.9)  # 10% from the right edge
 
         # Calculate the box where the rocket can start (top 20% of the screen)
         self.ROCKET_START_MARGIN = 0.2  # 20% of the screen height
@@ -46,9 +51,8 @@ class MoonLanderGame:
         self.ROCKET_START_LEFT = int(self.WIDTH * 0.1)  # 10% from the left edge
         self.ROCKET_START_RIGHT = int(self.WIDTH * 0.9)  # 10% from the right edge
 
-        # Set the X coordinates for rocket spawn
-        self.ROCKET_START_X_POSITIONS = [50, 700]  # Add or modify these values as needed
-        self.ROCKET_START_Y = 50  # Set the Y coordinate for rocket spawn
+        # Set the Y coordinate for rocket spawn
+        self.ROCKET_START_Y = 50
 
         # Physics constants
         self.GRAVITY = 0.1
@@ -89,19 +93,14 @@ class MoonLanderGame:
             self.clock = pygame.time.Clock()
 
     def generate_platform_position(self):
-        x = (self.WIDTH - self.PLATFORM_WIDTH) // 2
-        y = (self.HEIGHT - self.PLATFORM_HEIGHT) // 1
-        return pygame.Rect(x, y, self.PLATFORM_WIDTH, self.PLATFORM_HEIGHT)
+        x = random.randint(self.SPAWN_LEFT, self.SPAWN_RIGHT - self.PLATFORM_WIDTH)
+        return pygame.Rect(x, self.PLATFORM_Y, self.PLATFORM_WIDTH, self.PLATFORM_HEIGHT)
 
     def generate_rocket_position(self):
-        platform_left = self.platform_rect.left
-        platform_right = self.platform_rect.right
-
         while True:
-            x = random.randint(self.ROCKET_START_X_POSITIONS[0], self.ROCKET_START_X_POSITIONS[1])
-            if not (platform_left <= x <= platform_right):
+            x = random.randint(self.SPAWN_LEFT, self.SPAWN_RIGHT)
+            if not (self.platform_rect.left <= x <= self.platform_rect.right):
                 break
-
         y = self.ROCKET_START_Y
         return pygame.math.Vector2(x, y)
 
