@@ -47,7 +47,7 @@ class MoonLanderGame:
         self.ROCKET_START_RIGHT = int(self.WIDTH * 0.9)  # 10% from the right edge
 
         # Set the X coordinates for rocket spawn
-        self.ROCKET_START_X_POSITIONS = [50, 200, 400]  # Add or modify these values as needed
+        self.ROCKET_START_X_POSITIONS = [50, 700]  # Add or modify these values as needed
         self.ROCKET_START_Y = 50  # Set the Y coordinate for rocket spawn
 
         # Physics constants
