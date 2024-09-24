@@ -79,6 +79,9 @@ class MoonLanderGame:
 
         self.current_fitness = 0
 
+        self.last_x_position = self.position.x  # Add this in the __init__ method to initialize the last_x_position
+        self.x_position_start_time = None  # Add this in the __init__ method to initialize the x_position_start_time
+
     def initialize_display(self):
         if self.screen is None:
             self.screen = pygame.display.set_mode((self.WIDTH, self.HEIGHT))
@@ -193,6 +196,19 @@ class MoonLanderGame:
                     reward = -100  # Penalty for crashing
             else:
                 self.low_speed_start_time = None
+
+            # Check for no X movement condition
+            if self.position.x == self.last_x_position:
+                if self.x_position_start_time is None:
+                    self.x_position_start_time = self.current_time
+                elif self.current_time - self.x_position_start_time > self.MAX_LOW_SPEED_DURATION:
+                    self.landed = False
+                    self.game_over = True
+                    reward = -100  # Penalty for no X movement
+            else:
+                self.x_position_start_time = None
+
+            self.last_x_position = self.position.x  # Update the last X position
 
             # Check if the rocket touches any wall
             if (self.position.x <= 0 or self.position.x >= self.WIDTH or
