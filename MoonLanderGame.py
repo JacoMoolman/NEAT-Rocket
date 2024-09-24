@@ -91,7 +91,14 @@ class MoonLanderGame:
         return pygame.Rect(x, y, self.PLATFORM_WIDTH, self.PLATFORM_HEIGHT)
 
     def generate_rocket_position(self):
-        x = random.choice(self.ROCKET_START_X_POSITIONS)
+        platform_left = self.platform_rect.left
+        platform_right = self.platform_rect.right
+
+        while True:
+            x = random.randint(self.ROCKET_START_X_POSITIONS[0], self.ROCKET_START_X_POSITIONS[1])
+            if not (platform_left <= x <= platform_right):
+                break
+
         y = self.ROCKET_START_Y
         return pygame.math.Vector2(x, y)
 
