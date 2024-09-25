@@ -122,6 +122,7 @@ class MoonLanderGame:
         return self.get_state()
 
     def reset_rocket(self):
+        self.platform_rect = self.generate_platform_position()  # Regenerate platform position
         self.position = self.generate_rocket_position()
         self.velocity = pygame.math.Vector2(0, 0)
         self.angle = 0
