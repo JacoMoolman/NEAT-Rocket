@@ -3,14 +3,18 @@
 import pygame
 import math
 import random
+import os
 from fitness_display import FitnessDisplay
 
 class MoonLanderGame:
-    def __init__(self, show_individual_fitness=True):
+    def __init__(self, show_individual_fitness=True, show_display=True):
+        self.show_display = show_display
+        if not self.show_display:
+            # Set SDL to use the dummy NULL video driver, so it doesn't need a windowing system.
+            os.environ["SDL_VIDEODRIVER"] = "dummy"
         # Initialize Pygame
         pygame.init()
-        pygame.mixer.init()  # Initialize the mixer
-
+        pygame.mixer.init()
         # Load the beep sound
         self.beep_sound = pygame.mixer.Sound("beep.mp3")
 
@@ -44,13 +48,6 @@ class MoonLanderGame:
         self.SPAWN_LEFT = int(self.WIDTH * 0.1)  # 10% from the left edge
         self.SPAWN_RIGHT = int(self.WIDTH * 0.9)  # 10% from the right edge
 
-        # Calculate the box where the rocket can start (top 20% of the screen)
-        self.ROCKET_START_MARGIN = 0.2  # 20% of the screen height
-        self.ROCKET_START_TOP = 0
-        self.ROCKET_START_BOTTOM = int(self.HEIGHT * self.ROCKET_START_MARGIN)
-        self.ROCKET_START_LEFT = int(self.WIDTH * 0.1)  # 10% from the left edge
-        self.ROCKET_START_RIGHT = int(self.WIDTH * 0.9)  # 10% from the right edge
-
         # Set the Y coordinate for rocket spawn
         self.ROCKET_START_Y = 50
 
@@ -83,8 +80,12 @@ class MoonLanderGame:
 
         self.current_fitness = 0
 
-        self.last_x_position = self.position.x  # Add this in the __init__ method to initialize the last_x_position
-        self.x_position_start_time = None  # Add this in the __init__ method to initialize the x_position_start_time
+        self.last_x_position = self.position.x  # Initialize last_x_position
+        self.x_position_start_time = None  # Initialize x_position_start_time
+
+        # Initialize display if show_display is True
+        if self.show_display:
+            self.initialize_display()
 
     def initialize_display(self):
         if self.screen is None:
@@ -105,7 +106,6 @@ class MoonLanderGame:
         return pygame.math.Vector2(x, y)
 
     def reset(self):
-        self.initialize_display()
         self.platform_rect = self.generate_platform_position()  # Generate platform position first
         self.position = self.generate_rocket_position()  # Then generate rocket position
         self.velocity = pygame.math.Vector2(0, 0)
@@ -151,10 +151,11 @@ class MoonLanderGame:
         # thrust is a boolean
 
         # Event handling
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                self.running = False
-                self.game_over = True
+        if self.show_display:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    self.running = False
+                    self.game_over = True
 
         if not self.game_over:
             # Rotate the rocket
@@ -251,7 +252,8 @@ class MoonLanderGame:
                     self.landed = True
                     self.score += 1  # Increase the score
                     reward += 1000  # Reward for landing
-                    self.beep_sound.play()  # Play the beep sound
+                    if self.show_display:
+                        self.beep_sound.play()  # Play the beep sound
                     self.reset_rocket()
                 else:
                     self.landed = False
@@ -262,13 +264,17 @@ class MoonLanderGame:
                 self.game_over = True
                 reward = -100  # Penalty for crashing
 
-        self.draw()
+        if self.show_display:
+            self.draw()
 
         # Tick the clock
-        self.clock.tick(self.CLOCK_SPEED)
-
-        # Update time (scaled to match the increased clock speed)
-        self.current_time += self.clock.get_time() * self.TIME_SCALE
+        if self.show_display:
+            self.clock.tick(self.CLOCK_SPEED)
+            # Update time (scaled to match the increased clock speed)
+            self.current_time += self.clock.get_time() * self.TIME_SCALE
+        else:
+            # When not showing display, manage time manually
+            self.current_time += (1000 / self.CLOCK_SPEED) * self.TIME_SCALE
 
         # Get new state
         state = self.get_state()
@@ -278,6 +284,8 @@ class MoonLanderGame:
         return state, reward, self.game_over, {}
 
     def draw(self):
+        if not self.show_display:
+            return
         # Fill the screen with a dark color (space-like)
         self.screen.fill((20, 20, 40))
 
@@ -326,13 +334,17 @@ class MoonLanderGame:
         pygame.display.flip()
 
     def update_fitness_display(self, game_number, fitness):
-        self.fitness_surface = self.fitness_display.update(game_number, fitness)
-        self.population_number = game_number
+        if self.show_display:
+            self.fitness_surface = self.fitness_display.update(game_number, fitness)
+            self.population_number = game_number
 
     def close(self):
         # Close the fitness display and Pygame
-        self.fitness_display.close()
-        if self.screen is not None:
+        if self.show_display:
+            self.fitness_display.close()
+            if self.screen is not None:
+                pygame.quit()
+                self.screen = None
+                self.clock = None
+        else:
             pygame.quit()
-            self.screen = None
-            self.clock = None
