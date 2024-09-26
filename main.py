@@ -4,8 +4,9 @@ import neat
 import os
 import pickle
 import glob
-from multiprocessing import Process, Queue
+from multiprocessing import Process, Queue, cpu_count
 from MoonLanderGame import MoonLanderGame
+import time
 
 def evaluate_genomes_with_display(genomes_chunk, config, queue):
     # Initialize Pygame in this process
@@ -26,6 +27,7 @@ def evaluate_genomes_with_display(genomes_chunk, config, queue):
         queue.put((genome_id, fitness))
         game.reset()  # Reset the game for the next genome
     game.close()
+    queue.put('DONE')  # Signal that this process is done
 
 def evaluate_genomes_no_display(genomes_chunk, config, queue):
     for genome_id, genome in genomes_chunk:
@@ -43,78 +45,64 @@ def evaluate_genomes_no_display(genomes_chunk, config, queue):
         # Send fitness back to main process
         queue.put((genome_id, fitness))
         game.close()
+    queue.put('DONE')  # Signal that this process is done
 
 def eval_genomes(genomes, config):
     N = 5  # Number of processes with display
 
-    # Divide genomes into N chunks for display processes
-    genomes_with_display = [[] for _ in range(N)]
-    genomes_without_display = []
-    for idx, (genome_id, genome) in enumerate(genomes):
-        if idx % (N + 1) < N:
-            genomes_with_display[idx % N].append((genome_id, genome))
-        else:
-            genomes_without_display.append((genome_id, genome))
+    # Divide genomes into chunks
+    num_cores = 7  # Number of cores to use
+    total_processes = num_cores
+    genomes_per_process = len(genomes) // total_processes
+    chunks = [genomes[i * genomes_per_process:(i + 1) * genomes_per_process] for i in range(total_processes)]
+    # Add any remaining genomes to the last chunk
+    if len(genomes) % total_processes != 0:
+        chunks[-1].extend(genomes[total_processes * genomes_per_process:])
 
-    # Start N processes with display
-    queues = []
     processes = []
+    queues = []
+
+    # Start processes with display
     for i in range(N):
         queue = Queue()
-        p = Process(target=evaluate_genomes_with_display, args=(genomes_with_display[i], config, queue))
+        p = Process(target=evaluate_genomes_with_display, args=(chunks[i], config, queue))
         p.start()
         queues.append(queue)
         processes.append(p)
 
-    # Evaluate the rest in parallel
-    num_cores = 7  # Number of cores to use
-    num_processes_no_display = num_cores - N
-    queues_no_display = []
-    processes_no_display = []
-    if num_processes_no_display > 0 and len(genomes_without_display) > 0:
-        # Split genomes_without_display into chunks
-        from math import ceil
-        chunk_size = ceil(len(genomes_without_display) / num_processes_no_display)
-        for i in range(num_processes_no_display):
-            chunk = genomes_without_display[i * chunk_size:(i + 1) * chunk_size]
-            if chunk:
-                queue = Queue()
-                p = Process(target=evaluate_genomes_no_display, args=(chunk, config, queue))
-                p.start()
-                queues_no_display.append(queue)
-                processes_no_display.append(p)
+    # Start processes without display
+    for i in range(N, total_processes):
+        queue = Queue()
+        p = Process(target=evaluate_genomes_no_display, args=(chunks[i], config, queue))
+        p.start()
+        queues.append(queue)
+        processes.append(p)
 
-    # Collect results from display processes
-    for queue in queues:
-        while True:
-            try:
-                genome_id, fitness = queue.get(timeout=1)
-                # Assign fitness to the genome
-                for gid, genome in genomes:
-                    if gid == genome_id:
-                        genome.fitness = fitness
-                        break
-            except:
-                break
-
-    # Collect results from no-display processes
-    for queue in queues_no_display:
-        while True:
-            try:
-                genome_id, fitness = queue.get(timeout=1)
-                # Assign fitness to the genome
-                for gid, genome in genomes:
-                    if gid == genome_id:
-                        genome.fitness = fitness
-                        break
-            except:
-                break
+    # Collect results
+    finished_processes = 0
+    while finished_processes < total_processes:
+        for queue in queues:
+            while not queue.empty():
+                result = queue.get()
+                if result == 'DONE':
+                    finished_processes += 1
+                else:
+                    genome_id, fitness = result
+                    # Assign fitness to the genome
+                    for gid, genome in genomes:
+                        if gid == genome_id:
+                            genome.fitness = fitness
+                            break
+        time.sleep(0.1)  # Avoid busy waiting
 
     # Wait for all processes to finish
     for p in processes:
         p.join()
-    for p in processes_no_display:
-        p.join()
+
+    # Ensure all genomes have fitness assigned
+    for genome_id, genome in genomes:
+        if genome.fitness is None:
+            genome.fitness = -1000  # Assign a default low fitness
 
 def run(config_file):
     # Load the config file
