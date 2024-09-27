@@ -7,9 +7,10 @@ import os
 from fitness_display import FitnessDisplay
 
 class MoonLanderGame:
-    def __init__(self, show_individual_fitness=True, show_display=True, pop_size=0, minimize_window=False):
+    def __init__(self, show_individual_fitness=True, show_display=True, pop_size=0, minimize_window=False, show_graph=True):
         self.show_display = show_display
         self.minimize_window = minimize_window
+        self.show_graph = show_graph
         if not self.show_display:
             # Set SDL to use the dummy NULL video driver, so it doesn't need a windowing system.
             os.environ["SDL_VIDEODRIVER"] = "dummy"
@@ -337,7 +338,7 @@ class MoonLanderGame:
         self.screen.blit(generation_surface, (10, 130))
 
         # Display the fitness graph
-        if self.fitness_surface:
+        if self.fitness_surface and self.show_graph:
             self.screen.blit(self.fitness_surface, (self.WIDTH - 220, 20))
 
         # Update the display

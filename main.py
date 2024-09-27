@@ -8,11 +8,12 @@ from multiprocessing import Process, Queue, cpu_count
 from MoonLanderGame import MoonLanderGame
 import time
 
+SHOW_GRAPH = False  # Set this to False to hide the graph
 current_generation = 0  # Initialize the current generation variable
 
 def evaluate_genomes_with_display(genomes_chunk, config, queue, generation):
     # Initialize Pygame in this process
-    game = MoonLanderGame(show_individual_fitness=True, show_display=True, pop_size=config.pop_size, minimize_window=True)
+    game = MoonLanderGame(show_individual_fitness=True, show_display=True, pop_size=config.pop_size, minimize_window=True, show_graph=SHOW_GRAPH)
     game.update_generation(generation)
     game.generation = generation  # Set the generation number
     for genome_id, genome in genomes_chunk:
