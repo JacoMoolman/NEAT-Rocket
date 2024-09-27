@@ -60,7 +60,7 @@ def eval_genomes(genomes, config):
     current_generation += 1  # This is correct, keep it here
 
     N = 5  # Number of processes with display
-    
+
     # Divide genomes into chunks
     num_cores = 7  # Number of cores to use
     total_processes = num_cores
@@ -114,6 +114,14 @@ def eval_genomes(genomes, config):
         if genome.fitness is None:
             genome.fitness = -1000  # Assign a default low fitness
 
+# Move the BestGenomeSaver class outside the run function
+# Custom reporter to save the best genome
+class BestGenomeSaver(neat.reporting.BaseReporter):
+    def post_evaluate(self, config, population, species, best_genome):
+        with open('best_genome.pkl', 'wb') as f:
+            pickle.dump(best_genome, f)
+        print(f"Best genome saved with fitness: {best_genome.fitness}")
+
 def run(config_file):
     global current_generation
     # Load the config file
@@ -148,13 +156,7 @@ def run(config_file):
     # Save checkpoints every 5 generations
     p.add_reporter(neat.Checkpointer(5, filename_prefix=checkpoint_prefix))
 
-    # Custom reporter to save the best genome
-    class BestGenomeSaver(neat.reporting.BaseReporter):
-        def post_evaluate(self, config, population, species, best_genome):
-            with open('best_genome.pkl', 'wb') as f:
-                pickle.dump(best_genome, f)
-            print(f"Best genome saved with fitness: {best_genome.fitness}")
-
+    # Add the BestGenomeSaver reporter
     p.add_reporter(BestGenomeSaver())
 
     # Run for up to 300 generations
