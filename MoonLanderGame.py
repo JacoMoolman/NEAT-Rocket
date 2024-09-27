@@ -7,7 +7,7 @@ import os
 from fitness_display import FitnessDisplay
 
 class MoonLanderGame:
-    def __init__(self, show_individual_fitness=True, show_display=True):
+    def __init__(self, show_individual_fitness=True, show_display=True, pop_size=0):
         self.show_display = show_display
         if not self.show_display:
             # Set SDL to use the dummy NULL video driver, so it doesn't need a windowing system.
@@ -73,6 +73,7 @@ class MoonLanderGame:
 
         self.game_number = 0  # Initialize game number here
         self.population_number = 0
+        self.current_generation = 0
 
         self.low_speed_start_time = None
         self.LOW_SPEED_THRESHOLD = 0.9
@@ -86,6 +87,8 @@ class MoonLanderGame:
         # Initialize display if show_display is True
         if self.show_display:
             self.initialize_display()
+
+        self.pop_size = pop_size
 
     def initialize_display(self):
         if self.screen is None:
@@ -321,8 +324,8 @@ class MoonLanderGame:
         fitness_surface = self.font.render(fitness_text, True, (255, 255, 255))
         self.screen.blit(fitness_surface, (10, 90))
 
-        # Display the population number
-        population_text = f"Member #: {self.population_number}"
+        # Display the population number and generation
+        population_text = f"Gen {self.current_generation}, Member #: {self.population_number}"
         population_surface = self.font.render(population_text, True, (255, 255, 255))
         self.screen.blit(population_surface, (10, 130))
 
@@ -336,7 +339,16 @@ class MoonLanderGame:
     def update_fitness_display(self, game_number, fitness):
         if self.show_display:
             self.fitness_surface = self.fitness_display.update(game_number, fitness)
-            self.population_number = game_number
+            
+            # Check if we're starting a new generation
+            if game_number < self.population_number:
+                self.current_generation += 1
+                self.population_number = 0
+            else:
+                self.population_number = game_number % self.pop_size
+
+            # Update the population text to include the generation number
+            self.population_text = f"Gen {self.current_generation}, Member #: {self.population_number}"
 
     def close(self):
         # Close the fitness display and Pygame
