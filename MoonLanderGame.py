@@ -69,7 +69,8 @@ class MoonLanderGame:
         self.TIME_SCALE = self.CLOCK_SPEED / 60  # Scale factor for time
 
         # Fitness display
-        self.fitness_display = FitnessDisplay(200, 150, max_points=1000, show_individual=show_individual_fitness)
+        self.fitness_display = FitnessDisplay(200, 150, max_points=5000, show_individual=show_individual_fitness)
+
         self.fitness_surface = None
 
         self.game_number = 0  # Initialize game number here

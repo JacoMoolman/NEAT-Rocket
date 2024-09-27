@@ -3,7 +3,7 @@
 import pygame
 
 class FitnessDisplay:
-    def __init__(self, width, height, max_points=200, show_individual=True):
+    def __init__(self, width, height, max_points=10000, show_individual=True):
         self.width = width
         self.height = height
         self.max_points = max_points
@@ -56,21 +56,13 @@ class FitnessDisplay:
 
         # Draw individual fitnesses
         if self.show_individual and len(self.fitnesses) > 1:
-            for i in range(1, len(self.fitnesses)):
-                x1 = 20 + (i - 1) * x_scale
-                y1 = self.height - 20 - (self.fitnesses[i - 1] - min_fitness) * y_scale
-                x2 = 20 + i * x_scale
-                y2 = self.height - 20 - (self.fitnesses[i] - min_fitness) * y_scale
-                pygame.draw.line(self.surface, (0, 0, 255), (x1, y1), (x2, y2), 2)
+            points = [(20 + i * x_scale, self.height - 20 - (f - min_fitness) * y_scale) for i, f in enumerate(self.fitnesses)]
+            pygame.draw.lines(self.surface, (0, 0, 255), False, points, 1)
 
         # Draw average fitness
         if len(self.avg_fitnesses) > 1:
-            for i in range(1, len(self.avg_fitnesses)):
-                x1 = 20 + (i - 1) * x_scale
-                y1 = self.height - 20 - (self.avg_fitnesses[i - 1] - min_fitness) * y_scale
-                x2 = 20 + i * x_scale
-                y2 = self.height - 20 - (self.avg_fitnesses[i] - min_fitness) * y_scale
-                pygame.draw.line(self.surface, (255, 0, 0), (x1, y1), (x2, y2), 2)
+            avg_points = [(20 + i * x_scale, self.height - 20 - (f - min_fitness) * y_scale) for i, f in enumerate(self.avg_fitnesses)]
+            pygame.draw.lines(self.surface, (255, 0, 0), False, avg_points, 2)
 
         # Draw current fitness
         fitness_text = self.font.render(f"Fitness: {fitness:.2f}", True, (0, 0, 0))
