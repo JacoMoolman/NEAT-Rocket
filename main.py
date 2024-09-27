@@ -57,17 +57,15 @@ def evaluate_genomes_no_display(genomes_chunk, config, queue, generation):
 
 def eval_genomes(genomes, config):
     global current_generation
-    current_generation += 1  # This is correct, keep it here
+    current_generation += 1
 
-    N = 5  # Number of processes with display
+    N = min(7, len(genomes))  
+    num_cores = min(7, len(genomes))  
+    total_processes = num_cores
 
     # Divide genomes into chunks
-    num_cores = 7  # Number of cores to use
-    total_processes = num_cores
-    genomes_per_process = len(genomes) // total_processes
-    chunks = [genomes[i * genomes_per_process:(i + 1) * genomes_per_process] for i in range(total_processes)]
-    if len(genomes) % total_processes != 0:
-        chunks[-1].extend(genomes[total_processes * genomes_per_process:])
+    genomes_per_process = max(1, len(genomes) // total_processes)
+    chunks = [genomes[i:i + genomes_per_process] for i in range(0, len(genomes), genomes_per_process)]
 
     processes = []
     queues = []
@@ -81,7 +79,7 @@ def eval_genomes(genomes, config):
         processes.append(p)
 
     # Start processes without display
-    for i in range(N, total_processes):
+    for i in range(N, len(chunks)):
         queue = Queue()
         p = Process(target=evaluate_genomes_no_display, args=(chunks[i], config, queue, current_generation))
         p.start()
