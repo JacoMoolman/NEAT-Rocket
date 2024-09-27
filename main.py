@@ -135,17 +135,27 @@ def run(config_file):
         latest_checkpoint = f'{checkpoint_prefix}{latest_checkpoint_number}'
         print(f'Loading checkpoint {latest_checkpoint}')
         p = neat.Checkpointer.restore_checkpoint(latest_checkpoint)
-        current_generation = latest_checkpoint_number - 1
+        current_generation = latest_checkpoint_number
     else:
         p = neat.Population(config)
-        current_generation = -1  # Start at -1 so the first generation is 0
+        current_generation = 0
 
     # Add reporters
     p.add_reporter(neat.StdOutReporter(True))
     stats = neat.StatisticsReporter()
     p.add_reporter(stats)
-    # Save checkpoints every 10 generations
-    p.add_reporter(neat.Checkpointer(10))
+    
+    # Save checkpoints every 5 generations
+    p.add_reporter(neat.Checkpointer(5, filename_prefix=checkpoint_prefix))
+
+    # Custom reporter to save the best genome
+    class BestGenomeSaver(neat.reporting.BaseReporter):
+        def post_evaluate(self, config, population, species, best_genome):
+            with open('best_genome.pkl', 'wb') as f:
+                pickle.dump(best_genome, f)
+            print(f"Best genome saved with fitness: {best_genome.fitness}")
+
+    p.add_reporter(BestGenomeSaver())
 
     # Run for up to 300 generations
     winner = p.run(eval_genomes, 300)
@@ -153,6 +163,7 @@ def run(config_file):
     # Save the winner
     with open('winner.pkl', 'wb') as f:
         pickle.dump(winner, f)
+    print(f"Winner genome saved with fitness: {winner.fitness}")
 
 if __name__ == '__main__':
     # Determine path to configuration file.

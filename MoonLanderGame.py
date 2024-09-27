@@ -352,7 +352,7 @@ class MoonLanderGame:
             self.population_number = game_number % self.pop_size
 
     def update_generation(self, generation):
-        self.generation = generation
+        self.generation = generation + 1  # Add 1 to start from 1 instead of 0
 
     def close(self):
         # Close the fitness display and Pygame
