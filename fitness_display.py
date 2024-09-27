@@ -54,30 +54,44 @@ class FitnessDisplay:
             max_fitness += 1  # Avoid division by zero
         fitness_range = max_fitness - min_fitness
 
-        x_scale = (self.width - 40) / (len(self.fitnesses) - 1 if len(self.fitnesses) > 1 else 1)
-        y_scale = (self.height - 40) / fitness_range
+        x_scale = (self.width - 60) / (len(self.fitnesses) - 1 if len(self.fitnesses) > 1 else 1)
+        y_scale = (self.height - 60) / fitness_range
 
         # Draw axes
-        pygame.draw.line(self.surface, (0, 0, 0), (20, 20), (20, self.height - 20))  # Y axis
-        pygame.draw.line(self.surface, (0, 0, 0), (20, self.height - 20), (self.width - 20, self.height - 20))  # X axis
+        pygame.draw.line(self.surface, (0, 0, 0), (40, 20), (40, self.height - 40))  # Y axis
+        pygame.draw.line(self.surface, (0, 0, 0), (40, self.height - 40), (self.width - 20, self.height - 40))  # X axis
+
+        # Draw X-axis labels
+        for i in range(0, len(self.fitnesses), max(1, len(self.fitnesses) // 5)):
+            x = 40 + i * x_scale
+            label = str(i)
+            text_surface = self.font.render(label, True, (0, 0, 0))
+            self.surface.blit(text_surface, (x - text_surface.get_width() // 2, self.height - 35))
+
+        # Draw Y-axis labels
+        for i in range(5):
+            y = self.height - 40 - i * (self.height - 60) / 4
+            label = f"{min_fitness + i * fitness_range / 4:.1f}"
+            text_surface = self.font.render(label, True, (0, 0, 0))
+            self.surface.blit(text_surface, (5, y - text_surface.get_height() // 2))
 
         # Draw individual fitnesses
         if self.show_individual and len(self.fitnesses) > 1:
-            points = [(20 + i * x_scale, self.height - 20 - (f - min_fitness) * y_scale) for i, f in enumerate(self.fitnesses)]
+            points = [(40 + i * x_scale, self.height - 40 - (f - min_fitness) * y_scale) for i, f in enumerate(self.fitnesses)]
             pygame.draw.lines(self.surface, (0, 0, 255), False, points, 1)
 
         # Draw average fitness
         if len(self.avg_fitnesses) > 1:
-            avg_points = [(20 + i * x_scale, self.height - 20 - (f - min_fitness) * y_scale) for i, f in enumerate(self.avg_fitnesses)]
+            avg_points = [(40 + i * x_scale, self.height - 40 - (f - min_fitness) * y_scale) for i, f in enumerate(self.avg_fitnesses)]
             pygame.draw.lines(self.surface, (255, 0, 0), False, avg_points, 2)
 
         # Draw current fitness
         fitness_text = self.font.render(f"Fitness: {fitness:.2f}", True, (0, 0, 0))
-        self.surface.blit(fitness_text, (20, 0))
+        self.surface.blit(fitness_text, (40, 0))
 
         # Draw average fitness
         avg_fitness_text = self.font.render(f"Avg Fitness: {avg_fitness:.2f}", True, (0, 0, 0))
-        self.surface.blit(avg_fitness_text, (20, 20))
+        self.surface.blit(avg_fitness_text, (40, 20))
 
         return self.surface
 
