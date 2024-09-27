@@ -66,11 +66,11 @@ class MoonLanderGame:
         # Game state
         self.reset()
 
-        self.CLOCK_SPEED = 600  # Adjusted clock speed to normal
+        self.CLOCK_SPEED = 400  # Adjusted clock speed to normal
         self.TIME_SCALE = self.CLOCK_SPEED / 60  # Scale factor for time
 
         # Fitness display
-        self.fitness_display = FitnessDisplay(200, 150, max_points=5000, show_individual=show_individual_fitness)
+        self.fitness_display = FitnessDisplay(200, 150, max_points=5000, show_individual=show_individual_fitness and show_graph)
 
         self.fitness_surface = None
 
@@ -333,7 +333,7 @@ class MoonLanderGame:
         self.screen.blit(fitness_surface, (10, 90))
 
         # Display the generation number and population number
-        generation_text = f"Gen {self.generation}, Member #: {self.population_number}"
+        generation_text = f"Gen {self.generation-1}, Member #: {self.population_number}"
         generation_surface = self.font.render(generation_text, True, (255, 255, 255))
         self.screen.blit(generation_surface, (10, 130))
 
@@ -345,11 +345,11 @@ class MoonLanderGame:
         pygame.display.flip()
 
     def update_fitness_display(self, game_number, fitness):
-        if self.show_display:
+        if self.show_display and self.show_graph:
             self.fitness_surface = self.fitness_display.update(game_number, fitness)
-            
-            # Update the population number
-            self.population_number = game_number % self.pop_size
+        
+        # Update the population number
+        self.population_number = game_number % self.pop_size
 
     def update_generation(self, generation):
         self.generation = generation + 1  # Add 1 to start from 1 instead of 0

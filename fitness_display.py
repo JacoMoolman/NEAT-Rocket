@@ -37,6 +37,13 @@ class FitnessDisplay:
         if len(self.avg_fitnesses) > self.max_points:
             self.avg_fitnesses.pop(0)
 
+        # Only draw the graph if show_individual is True
+        if self.show_individual:
+            self.draw_graph(fitness, avg_fitness)
+
+        return self.surface
+
+    def draw_graph(self, fitness, avg_fitness):
         # Clear the surface
         self.surface.fill((255, 255, 255))
 

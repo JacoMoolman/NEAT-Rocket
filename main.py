@@ -8,7 +8,7 @@ from multiprocessing import Process, Queue, cpu_count
 from MoonLanderGame import MoonLanderGame
 import time
 
-SHOW_GRAPH = True
+SHOW_GRAPH = False
 current_generation = 0  # Initialize the current generation variable
 
 def evaluate_genomes_with_display(genomes_chunk, config, queue, generation):
