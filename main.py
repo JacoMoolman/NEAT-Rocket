@@ -10,7 +10,7 @@ import time
 
 def evaluate_genomes_with_display(genomes_chunk, config, queue):
     # Initialize Pygame in this process
-    game = MoonLanderGame(show_individual_fitness=False, show_display=True, pop_size=config.pop_size)
+    game = MoonLanderGame(show_individual_fitness=False, show_display=True, pop_size=config.pop_size, minimize_window=True)
     for genome_id, genome in genomes_chunk:
         net = neat.nn.FeedForwardNetwork.create(genome, config)
         game.update_fitness_display(genome_id, 0)

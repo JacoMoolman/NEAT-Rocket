@@ -7,8 +7,9 @@ import os
 from fitness_display import FitnessDisplay
 
 class MoonLanderGame:
-    def __init__(self, show_individual_fitness=True, show_display=True, pop_size=0):
+    def __init__(self, show_individual_fitness=True, show_display=True, pop_size=0, minimize_window=False):
         self.show_display = show_display
+        self.minimize_window = minimize_window
         if not self.show_display:
             # Set SDL to use the dummy NULL video driver, so it doesn't need a windowing system.
             os.environ["SDL_VIDEODRIVER"] = "dummy"
@@ -95,6 +96,9 @@ class MoonLanderGame:
             self.screen = pygame.display.set_mode((self.WIDTH, self.HEIGHT))
             pygame.display.set_caption("Moon Lander")
             self.clock = pygame.time.Clock()
+            
+            if self.minimize_window:
+                pygame.display.iconify()  # This minimizes the window
 
     def generate_platform_position(self):
         x = random.randint(self.SPAWN_LEFT, self.SPAWN_RIGHT - self.PLATFORM_WIDTH)
