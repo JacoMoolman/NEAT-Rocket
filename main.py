@@ -12,8 +12,8 @@ current_generation = 0  # Initialize the current generation variable
 
 def evaluate_genomes_with_display(genomes_chunk, config, queue, generation):
     # Initialize Pygame in this process
-    game = MoonLanderGame(show_individual_fitness=False, show_display=True, pop_size=config.pop_size, minimize_window=True)
-    game.update_generation(generation)  # This line is correct
+    game = MoonLanderGame(show_individual_fitness=True, show_display=True, pop_size=config.pop_size, minimize_window=True)
+    game.update_generation(generation)
     game.generation = generation  # Set the generation number
     for genome_id, genome in genomes_chunk:
         net = neat.nn.FeedForwardNetwork.create(genome, config)
@@ -27,6 +27,7 @@ def evaluate_genomes_with_display(genomes_chunk, config, queue, generation):
             thrust = action[2] > 0.5
             state, reward, done, _ = game.step((rotate_left, rotate_right, thrust))
             fitness += reward
+            game.update_fitness_display(genome_id, fitness)  # Update fitness display in each step
         # Send fitness back to main process
         queue.put((genome_id, fitness))
         game.reset()  # Reset the game for the next genome
