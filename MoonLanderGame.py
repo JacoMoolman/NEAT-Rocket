@@ -91,6 +91,8 @@ class MoonLanderGame:
 
         self.pop_size = pop_size
 
+        self.generation = 0  # Initialize generation number
+
     def initialize_display(self):
         if self.screen is None:
             self.screen = pygame.display.set_mode((self.WIDTH, self.HEIGHT))
@@ -328,10 +330,10 @@ class MoonLanderGame:
         fitness_surface = self.font.render(fitness_text, True, (255, 255, 255))
         self.screen.blit(fitness_surface, (10, 90))
 
-        # Display the population number and generation
-        population_text = f"Gen {self.current_generation}, Member #: {self.population_number}"
-        population_surface = self.font.render(population_text, True, (255, 255, 255))
-        self.screen.blit(population_surface, (10, 130))
+        # Display the generation number and population number
+        generation_text = f"Gen {self.generation}, Member #: {self.population_number}"
+        generation_surface = self.font.render(generation_text, True, (255, 255, 255))
+        self.screen.blit(generation_surface, (10, 130))
 
         # Display the fitness graph
         if self.fitness_surface:
@@ -344,15 +346,11 @@ class MoonLanderGame:
         if self.show_display:
             self.fitness_surface = self.fitness_display.update(game_number, fitness)
             
-            # Check if we're starting a new generation
-            if game_number < self.population_number:
-                self.current_generation += 1
-                self.population_number = 0
-            else:
-                self.population_number = game_number % self.pop_size
+            # Update the population number
+            self.population_number = game_number % self.pop_size
 
-            # Update the population text to include the generation number
-            self.population_text = f"Gen {self.current_generation}, Member #: {self.population_number}"
+    def update_generation(self, generation):
+        self.generation = generation
 
     def close(self):
         # Close the fitness display and Pygame

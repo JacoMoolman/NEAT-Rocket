@@ -8,9 +8,13 @@ from multiprocessing import Process, Queue, cpu_count
 from MoonLanderGame import MoonLanderGame
 import time
 
-def evaluate_genomes_with_display(genomes_chunk, config, queue):
+current_generation = 0  # Initialize the current generation variable
+
+def evaluate_genomes_with_display(genomes_chunk, config, queue, generation):
     # Initialize Pygame in this process
     game = MoonLanderGame(show_individual_fitness=False, show_display=True, pop_size=config.pop_size, minimize_window=True)
+    game.update_generation(generation)  # This line is correct
+    game.generation = generation  # Set the generation number
     for genome_id, genome in genomes_chunk:
         net = neat.nn.FeedForwardNetwork.create(genome, config)
         game.update_fitness_display(genome_id, 0)
@@ -29,9 +33,11 @@ def evaluate_genomes_with_display(genomes_chunk, config, queue):
     game.close()
     queue.put('DONE')  # Signal that this process is done
 
-def evaluate_genomes_no_display(genomes_chunk, config, queue):
+def evaluate_genomes_no_display(genomes_chunk, config, queue, generation):
     for genome_id, genome in genomes_chunk:
         game = MoonLanderGame(show_individual_fitness=False, show_display=False, pop_size=config.pop_size)
+        game.update_generation(generation)  # This line is correct
+        game.generation = generation  # Set the generation number
         net = neat.nn.FeedForwardNetwork.create(genome, config)  # Add this line
         fitness = 0.0
         state = game.get_state()
@@ -48,14 +54,16 @@ def evaluate_genomes_no_display(genomes_chunk, config, queue):
     queue.put('DONE')  # Signal that this process is done
 
 def eval_genomes(genomes, config):
-    N = 5  # Number of processes with display
+    global current_generation
+    current_generation += 1  # This is correct, keep it here
 
+    N = 5  # Number of processes with display
+    
     # Divide genomes into chunks
     num_cores = 7  # Number of cores to use
     total_processes = num_cores
     genomes_per_process = len(genomes) // total_processes
     chunks = [genomes[i * genomes_per_process:(i + 1) * genomes_per_process] for i in range(total_processes)]
-    # Add any remaining genomes to the last chunk
     if len(genomes) % total_processes != 0:
         chunks[-1].extend(genomes[total_processes * genomes_per_process:])
 
@@ -65,7 +73,7 @@ def eval_genomes(genomes, config):
     # Start processes with display
     for i in range(N):
         queue = Queue()
-        p = Process(target=evaluate_genomes_with_display, args=(chunks[i], config, queue))
+        p = Process(target=evaluate_genomes_with_display, args=(chunks[i], config, queue, current_generation))
         p.start()
         queues.append(queue)
         processes.append(p)
@@ -73,7 +81,7 @@ def eval_genomes(genomes, config):
     # Start processes without display
     for i in range(N, total_processes):
         queue = Queue()
-        p = Process(target=evaluate_genomes_no_display, args=(chunks[i], config, queue))
+        p = Process(target=evaluate_genomes_no_display, args=(chunks[i], config, queue, current_generation))
         p.start()
         queues.append(queue)
         processes.append(p)
@@ -105,6 +113,7 @@ def eval_genomes(genomes, config):
             genome.fitness = -1000  # Assign a default low fitness
 
 def run(config_file):
+    global current_generation
     # Load the config file
     config = neat.config.Config(
         neat.DefaultGenome,
@@ -124,8 +133,10 @@ def run(config_file):
         latest_checkpoint = f'{checkpoint_prefix}{latest_checkpoint_number}'
         print(f'Loading checkpoint {latest_checkpoint}')
         p = neat.Checkpointer.restore_checkpoint(latest_checkpoint)
+        current_generation = latest_checkpoint_number - 1
     else:
         p = neat.Population(config)
+        current_generation = -1  # Start at -1 so the first generation is 0
 
     # Add reporters
     p.add_reporter(neat.StdOutReporter(True))
