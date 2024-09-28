@@ -248,12 +248,12 @@ class MoonLanderGame:
             distance_vector = self.platform_rect.center - self.position
             current_distance = distance_vector.length()
 
-            # Compute reward based on change in distance
-            if self.previous_distance is not None:
-                delta_distance = self.previous_distance - current_distance
-                reward += delta_distance  # Scale reward
-            else:
-                reward += 0
+            # # Compute reward based on change in distance
+            # if self.previous_distance is not None:
+            #     delta_distance = self.previous_distance - current_distance
+            #     reward += delta_distance  # Scale reward
+            # else:
+            #     reward += 0
 
             self.previous_distance = current_distance  # Update previous distance
 

@@ -158,7 +158,7 @@ def run(config_file):
     p.add_reporter(BestGenomeSaver())
 
     # Run for up to 300 generations
-    winner = p.run(eval_genomes, 300)
+    winner = p.run(eval_genomes, 3000)
 
     # Save the winner
     with open('winner.pkl', 'wb') as f:
