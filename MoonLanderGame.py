@@ -27,7 +27,7 @@ class MoonLanderGame:
         self.clock = None
 
         # Game settings
-        self.MAX_LANDING_ANGLE = 360  # Maximum angle (in degrees) for safe landing
+        self.MAX_LANDING_ANGLE = 40  # Maximum angle (in degrees) for safe landing
         self.MAX_LANDING_SPEED = 10   # Maximum speed for safe landing
 
         # Load and resize the rocket image
@@ -45,10 +45,7 @@ class MoonLanderGame:
         self.PLATFORM_WIDTH = 100
         self.PLATFORM_HEIGHT = 10
         self.PLATFORM_Y = self.HEIGHT - self.PLATFORM_HEIGHT // 2  # Fixed Y position for the platform
-
-        # Set the X coordinates for platform and rocket spawn
-        self.SPAWN_LEFT = int(self.WIDTH * 0.1)  # 10% from the left edge
-        self.SPAWN_RIGHT = int(self.WIDTH * 0.9)  # 10% from the right edge
+        self.PLATFORM_X = (self.WIDTH - self.PLATFORM_WIDTH) // 2  # Fixed X position in the middle
 
         # Set the Y coordinate for rocket spawn
         self.ROCKET_START_Y = 50
@@ -105,20 +102,19 @@ class MoonLanderGame:
                 pygame.display.iconify()  # This minimizes the window
 
     def generate_platform_position(self):
-        x = random.randint(self.SPAWN_LEFT, self.SPAWN_RIGHT - self.PLATFORM_WIDTH)
-        return pygame.Rect(x, self.PLATFORM_Y, self.PLATFORM_WIDTH, self.PLATFORM_HEIGHT)
+        return pygame.Rect(self.PLATFORM_X, self.PLATFORM_Y, self.PLATFORM_WIDTH, self.PLATFORM_HEIGHT)
 
     def generate_rocket_position(self):
         while True:
-            x = random.randint(self.SPAWN_LEFT, self.SPAWN_RIGHT)
+            x = random.randint(0, self.WIDTH)
             if not (self.platform_rect.left <= x <= self.platform_rect.right):
                 break
         y = self.ROCKET_START_Y
         return pygame.math.Vector2(x, y)
 
     def reset(self):
-        self.platform_rect = self.generate_platform_position()  # Generate platform position first
-        self.position = self.generate_rocket_position()  # Then generate rocket position
+        self.platform_rect = self.generate_platform_position()
+        self.position = self.generate_rocket_position()
         self.velocity = pygame.math.Vector2(0, 0)
         self.angle = 0
         self.game_over = False
@@ -131,16 +127,6 @@ class MoonLanderGame:
         self.previous_distance = None  # Initialize previous_distance
         self.current_fitness = 0
         return self.get_state()
-
-    def reset_rocket(self):
-        self.platform_rect = self.generate_platform_position()  # Regenerate platform position
-        self.position = self.generate_rocket_position()
-        self.velocity = pygame.math.Vector2(0, 0)
-        self.angle = 0
-        self.thrust = False
-        self.landed = False
-        self.rocket_rect.center = self.position
-        self.previous_distance = None  # Reset previous_distance
 
     def get_state(self):
         # Return the current state of the game
@@ -244,18 +230,18 @@ class MoonLanderGame:
             flames_offset = pygame.math.Vector2(0, rotated_rect.height * 0.75).rotate(-self.angle)  # Increased offset
             flames_pos = rotated_rect.center + flames_offset
 
-            # Calculate distance to platform
-            distance_vector = self.platform_rect.center - self.position
-            current_distance = distance_vector.length()
+            # Calculate distance to platform center on X-axis
+            platform_center_x = self.platform_rect.centerx
+            current_distance_x = abs(self.position.x - platform_center_x)
 
-            # # Compute reward based on change in distance
-            # if self.previous_distance is not None:
-            #     delta_distance = self.previous_distance - current_distance
-            #     reward += delta_distance  # Scale reward
-            # else:
-            #     reward += 0
+            # Compute reward based on change in X-axis distance
+            if self.previous_distance is not None:
+                delta_distance_x = self.previous_distance - current_distance_x
+                reward = delta_distance_x * 1  # Scale reward for more impact
+            else:
+                reward = 0
 
-            self.previous_distance = current_distance  # Update previous distance
+            self.previous_distance = current_distance_x  # Update previous distance
 
             # Check for landing or crash
             if rotated_rect.colliderect(self.platform_rect):
@@ -265,7 +251,7 @@ class MoonLanderGame:
                     reward += 1000  # Reward for landing
                     if self.show_display:
                         self.beep_sound.play()  # Play the beep sound
-                    self.reset_rocket()
+                    self.reset()
                 else:
                     self.landed = False
                     self.game_over = True

@@ -157,7 +157,6 @@ def run(config_file):
     # Add the BestGenomeSaver reporter
     p.add_reporter(BestGenomeSaver())
 
-    # Run for up to 300 generations
     winner = p.run(eval_genomes, 3000)
 
     # Save the winner
