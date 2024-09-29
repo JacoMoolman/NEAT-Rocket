@@ -92,6 +92,8 @@ class MoonLanderGame:
 
         self.generation = 0  # Initialize generation number
 
+        self.MAX_GAME_TIME = 60 * 1000  # 60 seconds in milliseconds
+
     def initialize_display(self):
         if self.screen is None:
             self.screen = pygame.display.set_mode((self.WIDTH, self.HEIGHT))
@@ -218,7 +220,7 @@ class MoonLanderGame:
                 # Keep the rocket within the screen bounds (for rendering purposes)
                 self.position.x = max(0, min(self.position.x, self.WIDTH))
                 self.position.y = max(0, min(self.position.y, self.HEIGHT))
-                reward = 0  # Initialize reward
+                reward = 1  # Initialize reward
 
             # Update rocket position and rotation
             self.rocket_rect.center = self.position
@@ -260,6 +262,11 @@ class MoonLanderGame:
                 self.landed = False
                 self.game_over = True
                 reward = -100  # Penalty for crashing
+
+            # Check if the game has exceeded the time limit
+            if self.current_time > self.MAX_GAME_TIME:
+                self.game_over = True
+                reward = -50  # Penalty for timeout
 
         if self.show_display:
             self.draw()
