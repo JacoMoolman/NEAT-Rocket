@@ -27,7 +27,7 @@ class MoonLanderGame:
         self.clock = None
 
         # Game settings
-        self.MAX_LANDING_ANGLE = 40  # Maximum angle (in degrees) for safe landing
+        self.MAX_LANDING_ANGLE = 30  # Maximum angle (in degrees) for safe landing
         self.MAX_LANDING_SPEED = 10   # Maximum speed for safe landing
 
         # Load and resize the rocket image
@@ -107,11 +107,8 @@ class MoonLanderGame:
         return pygame.Rect(self.PLATFORM_X, self.PLATFORM_Y, self.PLATFORM_WIDTH, self.PLATFORM_HEIGHT)
 
     def generate_rocket_position(self):
-        while True:
-            x = random.randint(0, self.WIDTH)
-            if not (self.platform_rect.left <= x <= self.platform_rect.right):
-                break
-        y = self.ROCKET_START_Y
+        x = random.randint(0, self.WIDTH)  # Random X position
+        y = self.HEIGHT // 2  # Middle of the screen vertically
         return pygame.math.Vector2(x, y)
 
     def reset(self):
@@ -185,6 +182,10 @@ class MoonLanderGame:
             # Update position
             self.position += self.velocity
 
+            # Constrain the rocket within the screen bounds
+            self.position.x = max(0, min(self.position.x, self.WIDTH))
+            self.position.y = max(0, min(self.position.y, self.HEIGHT))
+
             # Check for low speed condition
             current_speed = self.velocity.length()
             if 0 < current_speed < self.LOW_SPEED_THRESHOLD:
@@ -210,17 +211,11 @@ class MoonLanderGame:
 
             self.last_x_position = self.position.x  # Update the last X position
 
-            # Check if the rocket touches any wall
-            if (self.position.x <= 0 or self.position.x >= self.WIDTH or
-                self.position.y <= 0 or self.position.y >= self.HEIGHT):
-                self.landed = False
-                self.game_over = True
-                reward = -100  # Penalty for crashing
-            else:
-                # Keep the rocket within the screen bounds (for rendering purposes)
-                self.position.x = max(0, min(self.position.x, self.WIDTH))
-                self.position.y = max(0, min(self.position.y, self.HEIGHT))
-                reward = 1  # Initialize reward
+            # Remove the check for touching walls
+            # Keep the rocket within the screen bounds (for rendering purposes)
+            self.position.x = max(0, self.position.x)
+            self.position.y = max(0, self.position.y)
+            reward = 1  # Initialize reward
 
             # Update rocket position and rotation
             self.rocket_rect.center = self.position
@@ -258,10 +253,10 @@ class MoonLanderGame:
                     self.landed = False
                     self.game_over = True
                     reward = -100  # Penalty for crashing
-            elif rotated_rect.bottom >= self.HEIGHT:
+            elif self.position.y + rotated_rect.height / 2 >= self.HEIGHT:
                 self.landed = False
                 self.game_over = True
-                reward = -100  # Penalty for crashing
+                reward = -100  # Penalty for crashing at the bottom of the screen
 
             # Check if the game has exceeded the time limit
             if self.current_time > self.MAX_GAME_TIME:
