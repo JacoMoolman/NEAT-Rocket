@@ -27,7 +27,7 @@ class MoonLanderGame:
         self.clock = None
 
         # Game settings
-        self.MAX_LANDING_ANGLE = 30  # Maximum angle (in degrees) for safe landing
+        self.MAX_LANDING_ANGLE = 10  # Maximum angle (in degrees) for safe landing
         self.MAX_LANDING_SPEED = 10   # Maximum speed for safe landing
 
         # Load and resize the rocket image
