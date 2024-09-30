@@ -247,6 +247,10 @@ class MoonLanderGame:
 
             self.previous_distance = current_distance_x  # Update previous distance
 
+            # Add reward for keeping the rocket upright
+            upright_reward = math.cos(math.radians(self.angle)) * 0.1
+            reward += upright_reward
+
             # Check for landing or crash
             if rotated_rect.colliderect(self.platform_rect):
                 if abs(self.angle) < self.MAX_LANDING_ANGLE and self.velocity.length() < self.MAX_LANDING_SPEED:
@@ -260,6 +264,7 @@ class MoonLanderGame:
                     self.landed = False
                     self.game_over = True
                     reward = -100  # Penalty for crashing
+                    reward += 50  # Small reward for at least hitting the platform
             elif self.position.y + rotated_rect.height / 2 >= self.HEIGHT:
                 self.landed = False
                 self.game_over = True
