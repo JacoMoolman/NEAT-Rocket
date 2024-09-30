@@ -132,6 +132,8 @@ class MoonLanderGame:
         self.rocket_rect.center = self.position
         self.previous_distance = None  # Initialize previous_distance
         self.current_fitness = 0
+        self.previous_distance_x = None
+        self.previous_distance_y = None
         return self.get_state()
 
     def get_state(self):
@@ -234,18 +236,22 @@ class MoonLanderGame:
             flames_offset = pygame.math.Vector2(0, rotated_rect.height * 0.75).rotate(-self.angle)  # Increased offset
             flames_pos = rotated_rect.center + flames_offset
 
-            # Calculate distance to platform center on X-axis
+            # Calculate distance to platform center on X and Y axes
             platform_center_x = self.platform_rect.centerx
+            platform_center_y = self.platform_rect.centery
             current_distance_x = abs(self.position.x - platform_center_x)
+            current_distance_y = abs(self.position.y - platform_center_y)
 
-            # Compute reward based on change in X-axis distance
-            if self.previous_distance is not None:
-                delta_distance_x = self.previous_distance - current_distance_x
-                reward = delta_distance_x * 1  # Scale reward for more impact
+            # Compute reward based on change in X and Y axes distances
+            if self.previous_distance_x is not None and self.previous_distance_y is not None:
+                delta_distance_x = self.previous_distance_x - current_distance_x
+                delta_distance_y = self.previous_distance_y - current_distance_y
+                reward = (delta_distance_x + delta_distance_y) * 1  # Scale reward for more impact
             else:
                 reward = 0
 
-            self.previous_distance = current_distance_x  # Update previous distance
+            self.previous_distance_x = current_distance_x  # Update previous X distance
+            self.previous_distance_y = current_distance_y  # Update previous Y distance
 
             # Add reward for keeping the rocket upright
             upright_reward = math.cos(math.radians(self.angle)) * 0.1
