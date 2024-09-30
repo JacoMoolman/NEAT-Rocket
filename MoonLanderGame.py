@@ -107,8 +107,15 @@ class MoonLanderGame:
         return pygame.Rect(self.PLATFORM_X, self.PLATFORM_Y, self.PLATFORM_WIDTH, self.PLATFORM_HEIGHT)
 
     def generate_rocket_position(self):
-        x = random.randint(0, self.WIDTH)  # Random X position
-        y = self.HEIGHT // 2  # Middle of the screen vertically
+        platform_center_x = self.PLATFORM_X + self.PLATFORM_WIDTH / 2
+        min_distance = self.WIDTH / 4  # Minimum horizontal distance from platform center
+
+        while True:
+            x = random.randint(0, self.WIDTH)
+            if abs(x - platform_center_x) >= min_distance:
+                break
+
+        y = self.ROCKET_START_Y  # Use the predefined start height
         return pygame.math.Vector2(x, y)
 
     def reset(self):
