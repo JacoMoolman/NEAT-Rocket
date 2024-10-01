@@ -269,8 +269,8 @@ class MoonLanderGame:
                 else:
                     self.landed = False
                     self.game_over = True
-                    reward = -100  # Penalty for crashing
-                    reward += 50  # Small reward for at least hitting the platform
+                    reward = -500  # Penalty for crashing
+                    reward += 200  # Small reward for at least hitting the platform
             elif self.position.y + rotated_rect.height / 2 >= self.HEIGHT:
                 self.landed = False
                 self.game_over = True
