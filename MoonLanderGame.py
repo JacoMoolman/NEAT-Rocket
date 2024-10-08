@@ -8,7 +8,7 @@ from fitness_display import FitnessDisplay
 
 class MoonLanderGame:
     def __init__(self, show_individual_fitness=True, show_display=True, pop_size=0, minimize_window=False, show_graph=True):
-        self.show_display = show_display
+        self.show_display = True  # Always show the display when playing with keyboard
         self.minimize_window = minimize_window
         self.show_graph = show_graph
         if not self.show_display:
@@ -63,7 +63,7 @@ class MoonLanderGame:
         # Game state
         self.reset()
 
-        self.CLOCK_SPEED = 400  # Adjusted clock speed to normal
+        self.CLOCK_SPEED = 50  # Adjusted clock speed to normal
         self.TIME_SCALE = self.CLOCK_SPEED / 60  # Scale factor for time
 
         # Fitness display
@@ -93,6 +93,11 @@ class MoonLanderGame:
         self.generation = 0  # Initialize generation number
 
         self.MAX_GAME_TIME = 60 * 1000  # 60 seconds in milliseconds
+
+        # Initialize keyboard control flags
+        self.rotate_left = False
+        self.rotate_right = False
+        self.thrust = False
 
     def initialize_display(self):
         if self.screen is None:
@@ -150,23 +155,33 @@ class MoonLanderGame:
         ]
         return state
 
-    def step(self, action):
-        # action is a tuple: (rotate_left, rotate_right, thrust)
-        # rotate_left and rotate_right are booleans
-        # thrust is a boolean
-
+    def step(self):
         # Event handling
         if self.show_display:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self.running = False
                     self.game_over = True
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_LEFT:
+                        self.rotate_left = True
+                    elif event.key == pygame.K_RIGHT:
+                        self.rotate_right = True
+                    elif event.key == pygame.K_UP:
+                        self.thrust = True
+                elif event.type == pygame.KEYUP:
+                    if event.key == pygame.K_LEFT:
+                        self.rotate_left = False
+                    elif event.key == pygame.K_RIGHT:
+                        self.rotate_right = False
+                    elif event.key == pygame.K_UP:
+                        self.thrust = False
 
         if not self.game_over:
             # Rotate the rocket
-            if action[0]:
+            if self.rotate_left:
                 self.angle += self.ROTATION_SPEED
-            if action[1]:
+            if self.rotate_right:
                 self.angle -= self.ROTATION_SPEED
 
             # Keep angle within [-180, 180] degrees
@@ -176,7 +191,6 @@ class MoonLanderGame:
                 self.angle += 360
 
             # Apply thrust in the direction the rocket is facing
-            self.thrust = action[2]  # Update the thrust attribute
             if self.thrust:
                 thrust_vector = pygame.math.Vector2(0, -self.THRUST).rotate(-self.angle)
                 self.velocity += thrust_vector
@@ -308,7 +322,7 @@ class MoonLanderGame:
 
         self.current_fitness += reward
 
-        return state, reward, self.game_over, {}
+        return self.game_over
 
     def draw(self):
         if not self.show_display:
@@ -380,3 +394,13 @@ class MoonLanderGame:
                 self.clock = None
         else:
             pygame.quit()
+
+    def run(self):
+        self.reset()
+        while self.running:
+            self.step()
+        self.close()
+
+if __name__ == "__main__":
+    game = MoonLanderGame(show_individual_fitness=False, show_display=True, pop_size=0, minimize_window=False, show_graph=False)
+    game.run()
