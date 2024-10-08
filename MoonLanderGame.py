@@ -21,8 +21,8 @@ class MoonLanderGame:
         self.beep_sound = pygame.mixer.Sound("beep.mp3")
 
         # Set up the display
-        self.WIDTH = 800
-        self.HEIGHT = 600
+        self.WIDTH = 600
+        self.HEIGHT = 400
         self.screen = None
         self.clock = None
 
@@ -63,7 +63,7 @@ class MoonLanderGame:
         # Game state
         self.reset()
 
-        self.CLOCK_SPEED = 400  # Adjusted clock speed to normal
+        self.CLOCK_SPEED = 40  # Adjusted clock speed to normal
         self.TIME_SCALE = self.CLOCK_SPEED / 60  # Scale factor for time
 
         # Fitness display
