@@ -246,16 +246,26 @@ class MoonLanderGame:
             if self.previous_distance_x is not None and self.previous_distance_y is not None:
                 delta_distance_x = self.previous_distance_x - current_distance_x
                 delta_distance_y = self.previous_distance_y - current_distance_y
-                reward = (delta_distance_x + delta_distance_y) * 1  # Scale reward for more impact
+                
+                # Increase reward for horizontal movement towards the platform
+                reward = delta_distance_x * 2 + delta_distance_y * 1
+                
+                # Penalize vertical-only movement
+                if abs(delta_distance_x) < 0.1 and abs(delta_distance_y) > 0.1:
+                    reward -= 1
             else:
                 reward = 0
 
-            self.previous_distance_x = current_distance_x  # Update previous X distance
-            self.previous_distance_y = current_distance_y  # Update previous Y distance
+            self.previous_distance_x = current_distance_x
+            self.previous_distance_y = current_distance_y
 
             # Add reward for keeping the rocket upright
-            upright_reward = math.cos(math.radians(self.angle)) * 0.1
+            upright_reward = math.cos(math.radians(self.angle)) * 0.2
             reward += upright_reward
+
+            # Penalize being far from the platform
+            distance_penalty = -(current_distance_x + current_distance_y) * 0.01
+            reward += distance_penalty
 
             # Check for landing or crash
             if rotated_rect.colliderect(self.platform_rect):
@@ -269,12 +279,12 @@ class MoonLanderGame:
                 else:
                     self.landed = False
                     self.game_over = True
-                    reward = -500  # Penalty for crashing
+                    reward = -1000  # Penalty for crashing
                     reward += 200  # Small reward for at least hitting the platform
             elif self.position.y + rotated_rect.height / 2 >= self.HEIGHT:
                 self.landed = False
                 self.game_over = True
-                reward = -100  # Penalty for crashing at the bottom of the screen
+                reward = -1000  # Penalty for crashing at the bottom of the screen
 
             # Check if the game has exceeded the time limit
             if self.current_time > self.MAX_GAME_TIME:
