@@ -106,8 +106,8 @@ class MoonLanderGame:
             # Update rocket rect position
             self.rocket_rect.center = self.position
 
-            # Check if the rocket touches the target
-            if self.position.distance_to(self.target_pos) <= self.target_radius:
+            # Check if the rocket collides with the moon
+            if self.rocket_rect.colliderect(self.moon_rect):
                 self.score += 1
                 self.generate_target_position()
 
