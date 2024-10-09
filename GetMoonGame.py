@@ -52,6 +52,14 @@ class MoonLanderGame:
         pygame.font.init()
         self.font = pygame.font.Font(None, 36)
 
+        # Generate random stars
+        self.stars = []
+        for _ in range(100):
+            x = random.randint(0, self.WIDTH)
+            y = random.randint(0, self.HEIGHT)
+            size = random.randint(1, 3)
+            self.stars.append((x, y, size))
+
         self.generate_target_position()
 
     def generate_target_position(self):
@@ -115,8 +123,13 @@ class MoonLanderGame:
         pygame.quit()
 
     def draw(self):
-        # Fill the screen with a dark color (space-like)
-        self.screen.fill((20, 20, 40))
+        # Fill the screen with black color
+        self.screen.fill((0, 0, 0))
+
+        # Draw the stars
+        for star in self.stars:
+            x, y, size = star
+            pygame.draw.circle(self.screen, (255, 255, 255), (x, y), size)
 
         # Draw the flames if thrust is applied
         if self.thrust:
