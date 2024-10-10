@@ -5,7 +5,7 @@ import math
 import random
 
 class MoonLanderGame:
-    def __init__(self):
+    def __init__(self, net):
         # Initialize Pygame
         pygame.init()
 
@@ -17,7 +17,10 @@ class MoonLanderGame:
         self.clock = pygame.time.Clock()
 
         # Clock tick rate
-        self.CLOCK_SPEED = 60
+        self.CLOCK_SPEED = 200
+
+        # Maximum run time (in milliseconds)
+        self.MAX_RUN_TIME = 10000
 
         # Load and resize the rocket image
         self.rocket_img = pygame.image.load("Rocket.png")
@@ -69,6 +72,9 @@ class MoonLanderGame:
         self.timer = 0
         self.timer_font = pygame.font.Font(None, 36)
 
+        # Store the NEAT neural network
+        self.net = net
+
     def generate_target_position(self):
         while True:
             x = random.randint(self.target_radius, self.WIDTH - self.target_radius)
@@ -79,21 +85,32 @@ class MoonLanderGame:
                 break
 
     def run(self):
-        while self.running:
+        while self.timer < self.MAX_RUN_TIME:  # Run for a maximum time
             # Event handling
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    self.running = False
+                    pygame.quit()
+                    return
 
-            # Rotate the rocket based on user input
-            keys = pygame.key.get_pressed()
-            if keys[pygame.K_LEFT]:
+            # Get input values for the neural network
+            inputs = [
+                self.position.x / self.WIDTH,
+                self.position.y / self.HEIGHT,
+                self.angle / 360,
+                self.velocity.x / self.MAX_SPEED,
+                self.velocity.y / self.MAX_SPEED,
+                self.position.distance_to(self.target_pos) / math.sqrt(self.WIDTH**2 + self.HEIGHT**2)
+            ]
+
+            # Get the output from the neural network
+            outputs = self.net.activate(inputs)
+
+            # Interpret the output and take actions
+            if outputs[0] > 0.5:
                 self.angle += self.ROTATION_SPEED
-            if keys[pygame.K_RIGHT]:
+            if outputs[1] > 0.5:
                 self.angle -= self.ROTATION_SPEED
-
-            # Apply thrust based on user input
-            self.thrust = keys[pygame.K_UP]
+            self.thrust = outputs[2] > 0.5
 
             # Apply thrust in the direction the rocket is facing
             if self.thrust:
@@ -120,7 +137,6 @@ class MoonLanderGame:
             if self.rocket_rect.colliderect(self.moon_rect):
                 self.score += 1
                 self.generate_target_position()
-                self.timer = 0  # Reset timer when the rocket reaches the moon
 
             # Keep the rocket within the screen bounds
             self.position.x = max(0, min(self.position.x, self.WIDTH))
@@ -131,7 +147,13 @@ class MoonLanderGame:
             # Tick the clock
             self.clock.tick(self.CLOCK_SPEED)
 
+        # Calculate fitness based on distance to target and time taken
+        distance_fitness = 1 / (self.position.distance_to(self.target_pos) + 1)
+        time_fitness = self.MAX_RUN_TIME / self.timer
+        fitness = distance_fitness + time_fitness
+
         pygame.quit()
+        return fitness
 
     def draw(self):
         # Fill the screen with black color
@@ -176,8 +198,3 @@ class MoonLanderGame:
 
         # Update the display
         pygame.display.flip()
-
-
-if __name__ == "__main__":
-    game = MoonLanderGame()
-    game.run()
