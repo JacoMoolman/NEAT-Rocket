@@ -80,6 +80,10 @@ class MoonLanderGame:
         # Reset timer
         self.timer = 0
 
+        # Reset zero speed time and penalty flag
+        self.zero_speed_time = 0
+        self.penalty_applied = False
+
     def generate_target_position(self):
         while True:
             x = random.randint(self.target_radius, self.WIDTH - self.target_radius)
@@ -108,6 +112,10 @@ class MoonLanderGame:
 
         # Reset timer
         self.timer = 0
+
+        # Reset zero speed time and penalty flag
+        self.zero_speed_time = 0
+        self.penalty_applied = False
 
         while self.timer < self.MAX_RUN_TIME:
             # Event handling
@@ -161,6 +169,18 @@ class MoonLanderGame:
             # Update timer based on clock speed
             elapsed_time = self.clock.get_time()
             self.timer += elapsed_time * (60 / self.CLOCK_SPEED)
+
+            # Check if the rocket's speed is zero
+            if self.velocity.length() == 0:
+                self.zero_speed_time += elapsed_time
+            else:
+                self.zero_speed_time = 0
+
+            # Check if the zero speed time exceeds 5 seconds
+            if self.zero_speed_time >= 500 and not self.penalty_applied:
+                self.score -= 100  # Apply penalty for not moving
+                self.penalty_applied = True
+                self.running = False  # End the game
 
             # Check if the rocket collides with the moon
             if self.rocket_rect.colliderect(self.moon_rect):
