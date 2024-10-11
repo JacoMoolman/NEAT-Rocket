@@ -74,6 +74,9 @@ class MoonLanderGame:
 
         self.generate_target_position()
 
+        # Calculate the initial distance between the rocket and the moon
+        self.initial_distance = self.position.distance_to(self.target_pos)
+
         # Reset timer
         self.timer = 0
 
@@ -140,6 +143,7 @@ class MoonLanderGame:
             if self.rocket_rect.colliderect(self.moon_rect):
                 self.score += 100  # Add a reward of 100 for hitting the moon
                 self.generate_target_position()
+                self.initial_distance = self.position.distance_to(self.target_pos)  # Update initial distance
 
             # Keep the rocket within the screen bounds
             self.position.x = max(0, min(self.position.x, self.WIDTH))
@@ -150,8 +154,10 @@ class MoonLanderGame:
             # Tick the clock
             self.clock.tick(self.CLOCK_SPEED)
 
-        # Calculate fitness based on distance to target 
-        distance_fitness = 1 / (self.position.distance_to(self.target_pos) + 1)
+        # Calculate fitness based on distance to target
+        current_distance = self.position.distance_to(self.target_pos)
+        distance_fitness = (self.initial_distance - current_distance) / self.initial_distance
+
         fitness = distance_fitness + self.score  # Include the score in the fitness calculation
 
         return fitness
@@ -192,6 +198,18 @@ class MoonLanderGame:
         score_text = f"Score: {self.score}"
         score_surface = self.font.render(score_text, True, (255, 255, 255))
         self.screen.blit(score_surface, (10, 70))
+
+        # Display current fitness
+        current_fitness = (self.initial_distance - self.position.distance_to(self.target_pos)) / self.initial_distance + self.score
+        fitness_text = f"Fitness: {current_fitness:.2f}"
+        fitness_surface = self.font.render(fitness_text, True, (255, 255, 255))
+        self.screen.blit(fitness_surface, (10, 100))
+
+        # Display distance to target
+        distance_to_target = self.position.distance_to(self.target_pos)
+        distance_text = f"Distance to Target: {distance_to_target:.2f}"
+        distance_surface = self.font.render(distance_text, True, (255, 255, 255))
+        self.screen.blit(distance_surface, (10, 130))
 
         # Draw the moon image
         self.screen.blit(self.moon_img, self.moon_rect)
