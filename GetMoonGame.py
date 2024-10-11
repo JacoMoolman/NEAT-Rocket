@@ -80,8 +80,9 @@ class MoonLanderGame:
         # Reset timer
         self.timer = 0
 
-        # Reset zero speed time and penalty flag
+        # Reset zero speed time, zero X movement time, and penalty flag
         self.zero_speed_time = 0
+        self.zero_x_movement_time = 0
         self.penalty_applied = False
 
     def generate_target_position(self):
@@ -113,8 +114,9 @@ class MoonLanderGame:
         # Reset timer
         self.timer = 0
 
-        # Reset zero speed time and penalty flag
+        # Reset zero speed time, zero X movement time, and penalty flag
         self.zero_speed_time = 0
+        self.zero_x_movement_time = 0
         self.penalty_applied = False
 
         while self.running and self.timer < self.MAX_RUN_TIME:
@@ -176,8 +178,14 @@ class MoonLanderGame:
             else:
                 self.zero_speed_time = 0
 
-            # Check if the zero speed time exceeds 5 seconds
-            if self.zero_speed_time >= 500 and not self.penalty_applied:
+            # Check if the rocket's X movement is zero
+            if self.velocity.x == 0:
+                self.zero_x_movement_time += elapsed_time
+            else:
+                self.zero_x_movement_time = 0
+
+            # Check if the zero speed time or zero X movement time exceeds 5 seconds
+            if (self.zero_speed_time >= 500 or self.zero_x_movement_time >= 500) and not self.penalty_applied:
                 self.score -= 100  # Apply penalty for not moving
                 self.penalty_applied = True
                 self.running = False  # End the game
