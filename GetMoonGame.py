@@ -22,7 +22,7 @@ class MoonLanderGame:
         self.CLOCK_SPEED = 400
 
         # Maximum run time (in game seconds)
-        self.MAX_RUN_TIME = 400
+        self.MAX_RUN_TIME = 1000
 
         # Load and resize the rocket image
         self.rocket_img = pygame.image.load("Rocket.png")
@@ -117,7 +117,7 @@ class MoonLanderGame:
         self.zero_speed_time = 0
         self.penalty_applied = False
 
-        while self.timer < self.MAX_RUN_TIME:
+        while self.running and self.timer < self.MAX_RUN_TIME:
             # Event handling
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -184,7 +184,7 @@ class MoonLanderGame:
 
             # Check if the rocket collides with the moon
             if self.rocket_rect.colliderect(self.moon_rect):
-                self.score += 100  # Add a reward of 100 for hitting the moon
+                self.score += 500  # Add a reward of 100 for hitting the moon
                 self.generate_target_position()
                 self.initial_distance = self.position.distance_to(self.target_pos)  # Update initial distance
 
