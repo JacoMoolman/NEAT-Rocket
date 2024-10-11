@@ -89,7 +89,26 @@ class MoonLanderGame:
             if self.target_pos.distance_to(self.position) > 100:
                 break
 
-    def run(self):
+    def run_genome(self, genome):
+        # Initialize game state
+        self.position = pygame.math.Vector2(self.WIDTH // 2, self.HEIGHT // 4)
+        self.velocity = pygame.math.Vector2(0, 0)
+        self.angle = 0
+        self.running = True
+        self.score = 0
+        self.thrust = False
+        self.target_pos = None
+
+        self.rocket_rect.center = self.position
+
+        self.generate_target_position()
+
+        # Calculate the initial distance between the rocket and the moon
+        self.initial_distance = self.position.distance_to(self.target_pos)
+
+        # Reset timer
+        self.timer = 0
+
         while self.timer < self.MAX_RUN_TIME:
             # Event handling
             for event in pygame.event.get():
@@ -159,6 +178,9 @@ class MoonLanderGame:
         distance_fitness = (self.initial_distance - current_distance) / self.initial_distance
 
         fitness = distance_fitness + self.score  # Include the score in the fitness calculation
+
+        # Display fitness score for the current genome
+        print(f"Genome {genome.key}: {fitness:.2f}")
 
         return fitness
 
