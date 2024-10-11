@@ -126,6 +126,10 @@ class MoonLanderGame:
                     pygame.quit()
                     return
 
+            # Calculate X and Y distances to the target
+            x_distance = (self.target_pos.x - self.position.x) / self.WIDTH
+            y_distance = (self.target_pos.y - self.position.y) / self.HEIGHT
+
             # Get input values for the neural network
             inputs = [
                 self.position.x / self.WIDTH,
@@ -133,7 +137,9 @@ class MoonLanderGame:
                 self.angle / 360,
                 self.velocity.x / self.MAX_SPEED,
                 self.velocity.y / self.MAX_SPEED,
-                self.position.distance_to(self.target_pos) / math.sqrt(self.WIDTH**2 + self.HEIGHT**2)
+                self.position.distance_to(self.target_pos) / math.sqrt(self.WIDTH**2 + self.HEIGHT**2),
+                x_distance,
+                y_distance
             ]
 
             # Get the output from the neural network
