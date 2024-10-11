@@ -17,10 +17,10 @@ class MoonLanderGame:
         self.clock = pygame.time.Clock()
 
         # Clock tick rate
-        self.CLOCK_SPEED = 200
+        self.CLOCK_SPEED = 400
 
-        # Maximum run time (in milliseconds)
-        self.MAX_RUN_TIME = 10000
+        # Maximum run time (in game seconds)
+        self.MAX_RUN_TIME = 200
 
         # Load and resize the rocket image
         self.rocket_img = pygame.image.load("Rocket.png")
@@ -85,7 +85,7 @@ class MoonLanderGame:
                 break
 
     def run(self):
-        while self.timer < self.MAX_RUN_TIME:  # Run for a maximum time
+        while self.timer < self.MAX_RUN_TIME: #* self.CLOCK_SPEED:  # Run for a maximum time
             # Event handling
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -130,8 +130,9 @@ class MoonLanderGame:
             # Update rocket rect position
             self.rocket_rect.center = self.position
 
-            # Update timer
-            self.timer += self.clock.get_time()
+            # Update timer based on clock speed
+            elapsed_time = self.clock.get_time()
+            self.timer += elapsed_time * (60 / self.CLOCK_SPEED)
 
             # Check if the rocket collides with the moon
             if self.rocket_rect.colliderect(self.moon_rect):
@@ -181,17 +182,16 @@ class MoonLanderGame:
         speed = self.velocity.length()
         velocity_text = f"Speed: {speed:.2f}"
         speed_surface = self.font.render(velocity_text, True, (255, 255, 255))
-        self.screen.blit(speed_surface, (10, 10))
+        self.screen.blit(speed_surface, (10, 40))  # Adjust the y-coordinate
 
-        # Display timer
-        timer_text = f"Time: {self.timer // 1000}.{(self.timer // 100) % 10}"
-        timer_surface = self.timer_font.render(timer_text, True, (255, 255, 255))
-        self.screen.blit(timer_surface, (10, 50))
+        # Render timer text
+        timer_text = self.font.render(f"Time: {int(self.timer / 60):02d}.{int(self.timer % 60):02d}", True, (255, 255, 255))
+        self.screen.blit(timer_text, (10, 10))
 
         # Display score
         score_text = f"Score: {self.score}"
         score_surface = self.font.render(score_text, True, (255, 255, 255))
-        self.screen.blit(score_surface, (10, 90))
+        self.screen.blit(score_surface, (10, 70))  # Adjust the y-coordinate
 
         # Draw the moon image
         self.screen.blit(self.moon_img, self.moon_rect)
