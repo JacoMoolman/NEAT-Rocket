@@ -1,11 +1,13 @@
 import neat
 import pickle
 from GetMoonGame import MoonLanderGame
+from functools import partial
 
-def eval_genomes(genomes, config):
+def eval_genomes(genomes, config, game):
     for genome_id, genome in genomes:
         net = neat.nn.FeedForwardNetwork.create(genome, config)
-        game = MoonLanderGame(net)
+        game.net = net
+        game.reset_game()
         genome.fitness = game.run()
 
 def run(config_path):
@@ -19,7 +21,10 @@ def run(config_path):
     stats = neat.StatisticsReporter()
     p.add_reporter(stats)
 
-    winner = p.run(eval_genomes, 50)
+    game = MoonLanderGame(None)
+    eval_genomes_partial = partial(eval_genomes, game=game)
+
+    winner = p.run(eval_genomes_partial, 500)
 
     with open('winner.pkl', 'wb') as f:
         pickle.dump(winner, f)

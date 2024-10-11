@@ -1,11 +1,13 @@
-# MoonLanderGame.py
-
 import pygame
 import math
 import random
 
 class MoonLanderGame:
     def __init__(self, net):
+        self.net = net
+        self.initialize_game()
+
+    def initialize_game(self):
         # Initialize Pygame
         pygame.init()
 
@@ -26,25 +28,15 @@ class MoonLanderGame:
         self.rocket_img = pygame.image.load("Rocket.png")
         self.rocket_img = pygame.transform.scale(self.rocket_img, (self.rocket_img.get_width() // 2, self.rocket_img.get_height() // 2))
         self.rocket_rect = self.rocket_img.get_rect()
-        self.rocket_rect.center = (self.WIDTH // 2, self.HEIGHT // 4)  # Position the rocket at the top quarter of the screen
 
         # Load and resize the flames image
         self.flames_img = pygame.image.load("Flames.png")
         self.flames_img = pygame.transform.scale(self.flames_img, (self.rocket_img.get_width(), self.rocket_img.get_height()))
         self.flames_rect = self.flames_img.get_rect()
 
-        # Game state
-        self.position = pygame.math.Vector2(self.WIDTH // 2, self.HEIGHT // 4)
-        self.velocity = pygame.math.Vector2(0, 0)
-        self.angle = 0
-        self.running = True
-        self.score = 0
-        self.thrust = False
-        self.target_pos = None
-        self.target_radius = 20  # Define target_radius before using it
-
         # Load and resize the moon image
         self.moon_img = pygame.image.load("Moonimage.png")
+        self.target_radius = 20
         self.moon_img = pygame.transform.scale(self.moon_img, (self.target_radius * 2, self.target_radius * 2))
         self.moon_rect = self.moon_img.get_rect()
 
@@ -66,14 +58,24 @@ class MoonLanderGame:
             size = random.randint(1, 3)
             self.stars.append((x, y, size))
 
+        self.reset_game()
+
+    def reset_game(self):
+        # Reset game state
+        self.position = pygame.math.Vector2(self.WIDTH // 2, self.HEIGHT // 4)
+        self.velocity = pygame.math.Vector2(0, 0)
+        self.angle = 0
+        self.running = True
+        self.score = 0
+        self.thrust = False
+        self.target_pos = None
+
+        self.rocket_rect.center = self.position
+
         self.generate_target_position()
 
-        # Initialize timer
+        # Reset timer
         self.timer = 0
-        self.timer_font = pygame.font.Font(None, 36)
-
-        # Store the NEAT neural network
-        self.net = net
 
     def generate_target_position(self):
         while True:
@@ -85,7 +87,7 @@ class MoonLanderGame:
                 break
 
     def run(self):
-        while self.timer < self.MAX_RUN_TIME: #* self.CLOCK_SPEED:  # Run for a maximum time
+        while self.timer < self.MAX_RUN_TIME:
             # Event handling
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -148,12 +150,10 @@ class MoonLanderGame:
             # Tick the clock
             self.clock.tick(self.CLOCK_SPEED)
 
-        # Calculate fitness based on distance to target and time taken
+        # Calculate fitness based on distance to target 
         distance_fitness = 1 / (self.position.distance_to(self.target_pos) + 1)
-        time_fitness = self.MAX_RUN_TIME / self.timer
-        fitness = distance_fitness + time_fitness
+        fitness = distance_fitness
 
-        pygame.quit()
         return fitness
 
     def draw(self):
@@ -182,7 +182,7 @@ class MoonLanderGame:
         speed = self.velocity.length()
         velocity_text = f"Speed: {speed:.2f}"
         speed_surface = self.font.render(velocity_text, True, (255, 255, 255))
-        self.screen.blit(speed_surface, (10, 40))  # Adjust the y-coordinate
+        self.screen.blit(speed_surface, (10, 40))
 
         # Render timer text
         timer_text = self.font.render(f"Time: {int(self.timer / 60):02d}.{int(self.timer % 60):02d}", True, (255, 255, 255))
@@ -191,7 +191,7 @@ class MoonLanderGame:
         # Display score
         score_text = f"Score: {self.score}"
         score_surface = self.font.render(score_text, True, (255, 255, 255))
-        self.screen.blit(score_surface, (10, 70))  # Adjust the y-coordinate
+        self.screen.blit(score_surface, (10, 70))
 
         # Draw the moon image
         self.screen.blit(self.moon_img, self.moon_rect)
