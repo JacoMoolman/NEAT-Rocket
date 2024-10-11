@@ -138,7 +138,7 @@ class MoonLanderGame:
 
             # Check if the rocket collides with the moon
             if self.rocket_rect.colliderect(self.moon_rect):
-                self.score += 1
+                self.score += 100  # Add a reward of 100 for hitting the moon
                 self.generate_target_position()
 
             # Keep the rocket within the screen bounds
@@ -152,7 +152,7 @@ class MoonLanderGame:
 
         # Calculate fitness based on distance to target 
         distance_fitness = 1 / (self.position.distance_to(self.target_pos) + 1)
-        fitness = distance_fitness
+        fitness = distance_fitness + self.score  # Include the score in the fitness calculation
 
         return fitness
 
