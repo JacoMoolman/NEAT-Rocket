@@ -22,7 +22,7 @@ class MoonLanderGame:
         self.CLOCK_SPEED = 400
 
         # Maximum run time (in game seconds)
-        self.MAX_RUN_TIME = 200
+        self.MAX_RUN_TIME = 400
 
         # Load and resize the rocket image
         self.rocket_img = pygame.image.load("Rocket.png")
@@ -147,6 +147,10 @@ class MoonLanderGame:
             # Limit speed
             if self.velocity.length() > self.MAX_SPEED:
                 self.velocity.scale_to_length(self.MAX_SPEED)
+
+            # Check if the rocket collides with the screen bounds
+            if self.position.x <= 0 or self.position.x >= self.WIDTH or self.position.y <= 0 or self.position.y >= self.HEIGHT:
+                self.velocity = pygame.math.Vector2(0, 0)  # Set velocity to zero if the rocket hits the wall
 
             # Update position
             self.position += self.velocity
