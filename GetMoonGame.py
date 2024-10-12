@@ -200,8 +200,10 @@ class MoonLanderGame:
                 self.velocity.scale_to_length(self.MAX_SPEED)
 
             # Check if the rocket collides with the screen bounds
-            if self.position.x <= 0 or self.position.x >= self.WIDTH or self.position.y <= 0 or self.position.y >= self.HEIGHT:
-                self.velocity = pygame.math.Vector2(0, 0)  # Set velocity to zero if the rocket hits the wall
+            if self.position.x <= 0 or self.position.x >= self.WIDTH:
+                self.velocity.x = -self.velocity.x  # Reverse the x-velocity to make the rocket bounce
+            if self.position.y <= 0 or self.position.y >= self.HEIGHT:
+                self.velocity.y = -self.velocity.y  # Reverse the y-velocity to make the rocket bounce
 
             # Update position
             self.position += self.velocity
@@ -301,4 +303,6 @@ class MoonLanderGame:
         self.screen.blit(self.moon_img, self.moon_rect)
 
         # Update the display
+        pygame.display.flip()
+
         pygame.display.flip()
