@@ -6,7 +6,7 @@ from functools import partial
 def eval_genomes(genomes, config):
     for genome_id, genome in genomes:
         net = neat.nn.FeedForwardNetwork.create(genome, config)
-        game = MoonLanderGame(net)
+        game = MoonLanderGame(net, genomes)  # Pass the genomes to the MoonLanderGame class
         genome.fitness = game.run_genome(genome)
 
 def run(config_path):

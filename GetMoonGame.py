@@ -1,10 +1,14 @@
 import pygame
 import math
 import random
+import matplotlib.pyplot as plt
 
 class MoonLanderGame:
-    def __init__(self, net):
+    def __init__(self, net, population):
         self.net = net
+        self.population = population  # Store the population in the MoonLanderGame class
+        self.fitness_scores = []
+        self.current_genome = None
         self.initialize_game()
 
     def initialize_game(self):
@@ -44,7 +48,7 @@ class MoonLanderGame:
         self.GRAVITY = 0.1
         self.THRUST = 0.2
         self.ROTATION_SPEED = 3
-        self.MAX_SPEED = 1
+        self.MAX_SPEED = 5
         self.MAX_ANGULAR_VELOCITY = 10  # Maximum angular velocity constant
 
         # Initialize font
@@ -88,6 +92,8 @@ class MoonLanderGame:
         self.zero_x_movement_time = 0
         self.penalty_applied = False
 
+        self.update_fitness_graph()  # Update the fitness graph at the beginning of each game
+
     def generate_target_position(self):
         while True:
             x = random.randint(self.target_radius, self.WIDTH - self.target_radius)
@@ -98,6 +104,7 @@ class MoonLanderGame:
                 break
 
     def run_genome(self, genome):
+        self.current_genome = genome
         # Initialize game state
         self.position = pygame.math.Vector2(self.WIDTH // 2, self.HEIGHT // 4)
         self.velocity = pygame.math.Vector2(0, 0)
@@ -257,6 +264,8 @@ class MoonLanderGame:
         distance_fitness = (self.initial_distance - current_distance) / self.initial_distance
 
         fitness = distance_fitness + self.score  # Include the score in the fitness calculation
+        genome.fitness = fitness  # Assign the fitness value to the genome
+        self.fitness_scores.append(fitness)
 
         # Display fitness score for the current genome
         print(f"Genome {genome.key}: {fitness:.2f}")
@@ -303,7 +312,38 @@ class MoonLanderGame:
         # Draw the moon image
         self.screen.blit(self.moon_img, self.moon_rect)
 
+        # Draw the fitness graph
+        self.draw_fitness_graph()
+
         # Update the display
         pygame.display.flip()
 
-        pygame.display.flip()
+    def update_fitness_graph(self):
+        plt.figure(figsize=(3, 2))  # Create a new figure for each game
+        plt.clf()  # Clear the current figure
+        
+        # Get the fitness scores and genome IDs
+        fitness_scores = [genome.fitness for genome_id, genome in self.population]
+        genome_ids = [genome_id for genome_id, _ in self.population]
+        
+        plt.plot(genome_ids, fitness_scores, marker='o', linestyle='-', color='green')
+        plt.title('Fitness Scores')
+        plt.xlabel('Genome ID')
+        plt.ylabel('Fitness')
+        plt.grid(True)
+        plt.tight_layout()
+
+    def draw_fitness_graph(self):
+        # Convert the matplotlib figure to a Pygame surface
+        fig_surface = self.matplotlib_to_pygame_surface(plt.gcf())
+
+        # Position the graph at the top right of the screen
+        graph_x = self.WIDTH - fig_surface.get_width() - 10
+        graph_y = 10
+        self.screen.blit(fig_surface, (graph_x, graph_y))
+
+    def matplotlib_to_pygame_surface(self, fig):
+        fig.canvas.draw()
+        rgb_array = fig.canvas.tostring_rgb()
+        pygame_surface = pygame.image.fromstring(rgb_array, fig.canvas.get_width_height(), 'RGB')
+        return pygame_surface
