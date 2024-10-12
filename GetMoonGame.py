@@ -238,6 +238,7 @@ class MoonLanderGame:
                 self.score += 500  # Add a reward of 100 for hitting the moon
                 self.generate_target_position()
                 self.initial_distance = self.position.distance_to(self.target_pos)  # Update initial distance
+                self.timer = 0  # Reset the timer when the rocket reaches the moon
 
             # Keep the rocket within the screen bounds
             self.position.x = max(0, min(self.position.x, self.WIDTH))
