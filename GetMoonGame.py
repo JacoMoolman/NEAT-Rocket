@@ -44,7 +44,8 @@ class MoonLanderGame:
         self.GRAVITY = 0.1
         self.THRUST = 0.2
         self.ROTATION_SPEED = 3
-        self.MAX_SPEED = 5
+        self.MAX_SPEED = 1
+        self.MAX_ANGULAR_VELOCITY = 10  # Maximum angular velocity constant
 
         # Initialize font
         pygame.font.init()
@@ -65,6 +66,8 @@ class MoonLanderGame:
         self.position = pygame.math.Vector2(self.WIDTH // 2, self.HEIGHT // 4)
         self.velocity = pygame.math.Vector2(0, 0)
         self.angle = 0
+        self.angular_velocity = 0  # Initialize angular velocity
+        self.prev_angle = 0  # Initialize previous angle
         self.running = True
         self.score = 0
         self.thrust = False
@@ -99,6 +102,8 @@ class MoonLanderGame:
         self.position = pygame.math.Vector2(self.WIDTH // 2, self.HEIGHT // 4)
         self.velocity = pygame.math.Vector2(0, 0)
         self.angle = 0
+        self.angular_velocity = 0  # Initialize angular velocity
+        self.prev_angle = 0  # Initialize previous angle
         self.running = True
         self.score = 0
         self.thrust = False
@@ -130,6 +135,29 @@ class MoonLanderGame:
             x_distance = (self.target_pos.x - self.position.x) / self.WIDTH
             y_distance = (self.target_pos.y - self.position.y) / self.HEIGHT
 
+            # Calculate angle to the moon
+            angle_to_moon = math.degrees(math.atan2(y_distance, x_distance))
+            normalized_angle = angle_to_moon / 180  # Normalize to -1 to 1 range
+
+            # Calculate normalized angular velocity
+            elapsed_time = self.clock.get_time() / 1000  # Convert milliseconds to seconds
+            if elapsed_time > 0:  # Check if elapsed_time is greater than zero
+                angular_velocity = (self.angle - self.prev_angle) / elapsed_time
+                normalized_angular_velocity = angular_velocity / self.MAX_ANGULAR_VELOCITY
+            else:
+                normalized_angular_velocity = 0  # Set to zero if elapsed_time is zero
+
+            # Calculate relative velocity components
+            relative_velocity_x = (self.velocity.x - 0) / self.MAX_SPEED  # Assuming moon velocity is 0
+            relative_velocity_y = (self.velocity.y - 0) / self.MAX_SPEED  # Assuming moon velocity is 0
+
+            # Calculate distance ratio to nearest screen edge
+            distance_to_vertical_edge = min(self.position.x, self.WIDTH - self.position.x) / self.WIDTH
+            distance_to_horizontal_edge = min(self.position.y, self.HEIGHT - self.position.y) / self.HEIGHT
+
+            # Calculate angle between rocket direction and velocity vector
+            angle_between_direction_velocity = math.atan2(self.velocity.y, self.velocity.x) - math.radians(self.angle)
+
             # Get input values for the neural network
             inputs = [
                 self.position.x / self.WIDTH,
@@ -137,9 +165,16 @@ class MoonLanderGame:
                 self.angle / 360,
                 self.velocity.x / self.MAX_SPEED,
                 self.velocity.y / self.MAX_SPEED,
-                self.position.distance_to(self.target_pos) / math.sqrt(self.WIDTH**2 + self.HEIGHT**2),
+                self.position.distance_to(self.target_pos) / math.sqrt(self.WIDTH**2 + self.HEIGHT**2),  # Normalize by screen diagonal
                 x_distance,
-                y_distance
+                y_distance,
+                normalized_angle,
+                normalized_angular_velocity,  # Add normalized angular velocity as input
+                relative_velocity_x,  # Add relative velocity X component as input
+                relative_velocity_y,  # Add relative velocity Y component as input
+                distance_to_vertical_edge,  # Add distance ratio to nearest vertical edge as input
+                distance_to_horizontal_edge,  # Add distance ratio to nearest horizontal edge as input
+                angle_between_direction_velocity  # Add angle between rocket direction and velocity vector as input
             ]
 
             # Get the output from the neural network
@@ -191,7 +226,7 @@ class MoonLanderGame:
                 self.zero_x_movement_time = 0
 
             # Check if the zero speed time or zero X movement time exceeds 5 seconds
-            if (self.zero_speed_time >= 500 or self.zero_x_movement_time >= 500) and not self.penalty_applied:
+            if (self.zero_speed_time >= 800 or self.zero_x_movement_time >= 800) and not self.penalty_applied:
                 self.score -= 100  # Apply penalty for not moving
                 self.penalty_applied = True
                 self.running = False  # End the game
@@ -205,6 +240,9 @@ class MoonLanderGame:
             # Keep the rocket within the screen bounds
             self.position.x = max(0, min(self.position.x, self.WIDTH))
             self.position.y = max(0, min(self.position.y, self.HEIGHT))
+
+            # Update previous angle
+            self.prev_angle = self.angle
 
             self.draw()
 
@@ -258,18 +296,6 @@ class MoonLanderGame:
         score_text = f"Score: {self.score}"
         score_surface = self.font.render(score_text, True, (255, 255, 255))
         self.screen.blit(score_surface, (10, 70))
-
-        # Display current fitness
-        current_fitness = (self.initial_distance - self.position.distance_to(self.target_pos)) / self.initial_distance + self.score
-        fitness_text = f"Fitness: {current_fitness:.2f}"
-        fitness_surface = self.font.render(fitness_text, True, (255, 255, 255))
-        self.screen.blit(fitness_surface, (10, 100))
-
-        # Display distance to target
-        distance_to_target = self.position.distance_to(self.target_pos)
-        distance_text = f"Distance to Target: {distance_to_target:.2f}"
-        distance_surface = self.font.render(distance_text, True, (255, 255, 255))
-        self.screen.blit(distance_surface, (10, 130))
 
         # Draw the moon image
         self.screen.blit(self.moon_img, self.moon_rect)
