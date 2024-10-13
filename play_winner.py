@@ -21,7 +21,7 @@ winner_net = neat.nn.FeedForwardNetwork.create(winner, config)
 game = GetMoonGame.MoonLanderGame(net=winner_net)
 
 # Run the game using the winner neural network
-fitness = game.run_genome(winner)
+fitness = game.run_genome(winner, generation=0)  # Pass an arbitrary generation number
 
 print(f"Winner fitness: {fitness}")
 

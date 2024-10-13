@@ -97,7 +97,7 @@ class MoonLanderGame:
             if self.target_pos.distance_to(self.position) > 100:
                 break
 
-    def run_genome(self, genome):
+    def run_genome(self, genome, generation):
         # Initialize game state
         self.position = pygame.math.Vector2(self.WIDTH // 2, self.HEIGHT // 4)
         self.velocity = pygame.math.Vector2(0, 0)
@@ -257,6 +257,10 @@ class MoonLanderGame:
         distance_fitness = (self.initial_distance - current_distance) / self.initial_distance
 
         fitness = distance_fitness + self.score  # Include the score in the fitness calculation
+
+        # Write the fitness value to a file
+        with open('fitness_values.txt', 'a') as file:
+            file.write(f"Generation {generation}, Genome {genome.key}: {fitness:.2f}\n")
 
         # Display fitness score for the current genome
         print(f"Genome {genome.key}: {fitness:.2f}")
