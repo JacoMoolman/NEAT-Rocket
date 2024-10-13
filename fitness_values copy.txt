@@ -6499,3 +6499,17 @@ Generation 0, Genome 6305: 500.12
 Generation 0, Genome 6306: -2.94
 Generation 0, Genome 6307: -0.94
 Generation 0, Genome 6204: 54999.54
+Generation 0, Genome 6204: 500.85
+Generation 0, Genome 6204: -99.46
+Generation 0, Genome 6204: 0.80
+Generation 0, Genome 6204: 3000.01
+Generation 0, Genome 6204: 13500.89
+Generation 0, Genome 6204: 9500.85
+Generation 0, Genome 6204: 1500.91
+Generation 0, Genome 1979: 3500.84
+Generation 0, Genome 1979: 4000.26
+Generation 0, Genome 1979: 5500.80
+Generation 0, Genome 1979: 2500.81
+Generation 0, Genome 1979: -99.53
+Generation 0, Genome 1979: 5499.93
+Generation 0, Genome 1979: 500.19

@@ -11,7 +11,7 @@ config = neat.Config(neat.DefaultGenome, neat.DefaultReproduction,
 p = neat.Population(config)
 
 # Load the winner genome
-with open('winner.pkl', 'rb') as f:
+with open('winner copy.pkl', 'rb') as f:
     winner = pickle.load(f)
 
 # Create a neural network from the winner genome
